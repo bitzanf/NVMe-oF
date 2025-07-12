@@ -1,0 +1,22 @@
+{
+  "profiles": {
+    "ManagementApp (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "ManagementApp (RemotePkg)": {
+      "commandName": "MsixPackage",
+      "remoteDebugEnabled": true,
+      "remoteDebugMachine": "w11kd",
+      "authenticationMode": "Windows"
+    },
+    "ManagementApp (Unpackaged)": {
+      "commandName": "Project"
+    },
+    "ManagementApp (Remote Unpackaged)": {
+      "commandName": "Project",
+      "remoteDebugEnabled": true,
+      "remoteDebugMachine": "w11kd",
+      "authenticationMode": "Windows"
+    }
+  }
+}

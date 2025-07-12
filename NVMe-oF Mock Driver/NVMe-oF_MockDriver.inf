@@ -1,0 +1,62 @@
+;
+; NVMe-oF_MockDriver.inf
+;
+
+[Version]
+Signature   = "$WINDOWS NT$"
+Class       = System ; TODO: specify appropriate Class
+ClassGuid   = {4d36e97d-e325-11ce-bfc1-08002be10318} ; TODO: specify appropriate ClassGuid
+Provider    = %ManufacturerName%
+CatalogFile = NVMe-oF_MockDriver.cat
+DriverVer   = ; TODO: set DriverVer in stampinf property pages
+PnpLockdown = 1
+
+[DestinationDirs]
+DefaultDestDir = 13
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+NVMe-oF_MockDriver.sys = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName% = Standard,NT$ARCH$.10.0...16299 ; %13% support introduced in build 16299
+
+[Standard.NT$ARCH$.10.0...16299]
+%NVMe-oF_MockDriver.DeviceDesc% = NVMe-oF_MockDriver_Device, Root\NVMe-oF_MockDriver ; TODO: edit hw-id
+
+[NVMe-oF_MockDriver_Device.NT]
+CopyFiles = File_Copy
+
+[File_Copy]
+NVMe-oF_MockDriver.sys
+
+;-------------- Service installation
+[NVMe-oF_MockDriver_Device.NT.Services]
+AddService = NVMe-oF_MockDriver,%SPSVCINST_ASSOCSERVICE%, NVMe-oF_MockDriver_Service_Inst
+
+; -------------- NVMe-oF_MockDriver driver install sections
+[NVMe-oF_MockDriver_Service_Inst]
+DisplayName    = %NVMe-oF_MockDriver.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %13%\NVMe-oF_MockDriver.sys
+
+[NVMe-oF_MockDriver_Device.NT.Wdf]
+KmdfService = NVMe-oF_MockDriver, NVMe-oF_MockDriver_wdfsect
+
+[NVMe-oF_MockDriver_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE = 0x00000002
+ManufacturerName = "<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "NVMe-oF_MockDriver Installation Disk"
+NVMe-oF_MockDriver.DeviceDesc = "NVMe-oF_MockDriver Device"
+NVMe-oF_MockDriver.SVCDESC = "NVMe-oF_MockDriver Service"
