@@ -9,19 +9,13 @@ namespace ManagementApp.Models;
 
 internal class DiskConnectionModel
 {
-    public ConnectionStatusEnum ConnectionStatus { get; set; }
-
-    public TransportTypeEnum TransportType { get; set; }
-
-    public AddressFamilyEnum AddressFamily { get; set; }
-
-    public short TransportServiceId { get; set; }
-
-    public string TransportAddress { get; set; }
-
-    public string Nqn { get; set; }
-
-    public string NtObjectPath { get; set; }
+    public required ConnectionStatusEnum ConnectionStatus { get; set; }
+    public required TransportTypeEnum TransportType { get; set; }
+    public required AddressFamilyEnum AddressFamily { get; set; }
+    public required ushort TransportServiceId { get; set; }
+    public required string TransportAddress { get; set; }
+    public required string Nqn { get; set; }
+    public required string NtObjectPath { get; set; }
 
     public enum ConnectionStatusEnum
     {

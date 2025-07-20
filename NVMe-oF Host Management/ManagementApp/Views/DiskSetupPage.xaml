@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ReSharper disable Xaml.ConstructorWarning -->
+<Page
+    x:Class="ManagementApp.Views.DiskSetupPage"
+    x:Name="DiskSetupPageForContext"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ManagementApp.Views"
+    xmlns:model="using:ManagementApp.Models"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:localConverters="using:ManagementApp.Converters"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <localConverters:ConnectionStatusToIconConverter x:Key="ConnectionStatusToIconConverter" />
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal"
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Spacing="12">
+
+            <Button x:Name="BtnRefresh"
+                    x:Uid="RefreshDisks"
+                    Click="BtnRefresh_OnClick"
+                    IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" >
+
+                <SymbolIcon Symbol="Refresh" />
+            </Button>
+
+            <!-- ReSharper disable once Xaml.StaticResourceNotResolved -->
+            <Button x:Name="BtnSave"
+                    x:Uid="SaveDisks"
+                    Click="BtnSave_OnClick"
+                    IsEnabled="{x:Bind ViewModel.HasChanges, Mode=OneWay}"
+                    Style="{StaticResource AccentButtonStyle}">
+
+                <SymbolIcon Symbol="Save" />
+            </Button>
+
+            <!-- ReSharper disable once Xaml.StaticResourceNotResolved -->
+            <Button x:Name="BtnCancel"
+                    x:Uid="CancelDisks"
+                    Click="BtnCancel_OnClick"
+                    IsEnabled="{x:Bind ViewModel.HasChanges, Mode=OneWay}"
+                    Style="{StaticResource AccentButtonStyle}">
+
+                <SymbolIcon Symbol="Cancel" />
+            </Button>
+
+            <ProgressRing IsActive="True"
+                          Margin="12,0,0,0"
+                          Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+        </StackPanel>
+
+        <TextBlock HorizontalAlignment="Center"
+                   TextAlignment="Center"
+                   Grid.Row="0"
+                   Grid.Column="1"
+                   Visibility="{x:Bind ViewModel.KnownNoDisks, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" >
+            <Run FontWeight="SemiBold" x:Uid="NoDisksConfigured" />
+        </TextBlock>
+
+        <ItemsControl ItemsSource="{x:Bind ViewModel.Connections}"
+                      Grid.Row="1"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="2">
+
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="model:DiskConnectionModel">
+                    <controls:SettingsCard VerticalAlignment="Top"
+                                           Header="{Binding Path=NtObjectPath}"
+                                           Description="{Binding Path=Nqn}"
+                                           HeaderIcon="{Binding ConnectionStatus, Converter={StaticResource ConnectionStatusToIconConverter}}"
+                                           Margin="0,12,0,0">
+
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Button Command="{Binding ElementName=DiskSetupPageForContext, Path=EditCommand}" CommandParameter="{Binding}">
+                                <SymbolIcon Symbol="Edit" />
+                            </Button>
+                            <Button Command="{Binding ElementName=DiskSetupPageForContext, Path=DeleteCommand}" CommandParameter="{Binding}">
+                                <SymbolIcon Symbol="Delete" />
+                            </Button>
+                        </StackPanel>
+                    </controls:SettingsCard>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</Page>

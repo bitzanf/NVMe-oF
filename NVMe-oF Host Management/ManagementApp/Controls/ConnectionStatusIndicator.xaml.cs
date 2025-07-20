@@ -1,19 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 
 using ConnectionStatusEnum = ManagementApp.Models.DiskConnectionModel.ConnectionStatusEnum;
 
@@ -36,11 +23,24 @@ internal sealed partial class ConnectionStatusIndicator : UserControl
         }
     }
 
+    public double Radius
+    {
+        get => (double)GetValue(RadiusDependencyProperty);
+        set => SetValue(RadiusDependencyProperty, value);
+    }
+
     public static readonly DependencyProperty ConnectionStatusDependencyProperty = DependencyProperty.Register(
         nameof(ConnectionStatus),
         typeof(ConnectionStatusEnum),
         typeof(ConnectionStatusIndicator),
         new PropertyMetadata(ConnectionStatusEnum.Disconnected)
+    );
+
+    public static readonly DependencyProperty RadiusDependencyProperty = DependencyProperty.Register(
+        nameof(Radius),
+        typeof(double),
+        typeof(ConnectionStatusIndicator),
+        new PropertyMetadata(2.0)
     );
 
     public ConnectionStatusIndicator()
@@ -52,15 +52,7 @@ internal sealed partial class ConnectionStatusIndicator : UserControl
 
     private void GoToState(ConnectionStatusEnum status)
     {
-        var state = status switch
-        {
-            ConnectionStatusEnum.Disconnected => "Disconnected",
-            ConnectionStatusEnum.Connecting => "Connecting",
-            ConnectionStatusEnum.Connected => "Connected",
-
-            _ => throw new ArgumentException(status.ToString(), nameof(status))
-        };
-
-        VisualStateManager.GoToState(this, state, false);
+        if (!Enum.IsDefined(status)) throw new ArgumentException(status.ToString(), nameof(status));
+        VisualStateManager.GoToState(this, status.ToString(), false);
     }
 }

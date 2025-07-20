@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    Title="{x:Bind GetAppTitleFromSystem()}"
     mc:Ignorable="d">
 
     <Window.SystemBackdrop>
@@ -60,17 +61,17 @@
 
             <NavigationView.MenuItems>
                 <NavigationViewItem x:Uid="DiskPageNav"
-                                    Tag="ManagementApp.Pages.DiskPage"
+                                    Tag="ManagementApp.Views.DiskPage"
                                     Icon="{ui:FontIcon Glyph=&#xEDA2;}" />
 
                 <NavigationViewItem x:Uid="DiskSetupNav"
-                                    Tag="ManagementApp.Pages.DiskSetupPage"
+                                    Tag="ManagementApp.Views.DiskSetupPage"
                                     Icon="{ui:FontIcon Glyph=&#xE835;}" />
             </NavigationView.MenuItems>
 
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem x:Uid="QuickConnectNav"
-                                    Tag="ManagementApp.Pages.QuickConnectionPage"
+                                    Tag="ManagementApp.Views.QuickConnectionPage"
                                     Icon="{ui:FontIcon Glyph=&#xE703;}" />
             </NavigationView.FooterMenuItems>
 

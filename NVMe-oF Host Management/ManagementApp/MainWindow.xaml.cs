@@ -1,18 +1,12 @@
-using KernelInterface;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Windows.ApplicationModel;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using ManagementApp.Views;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -29,7 +23,6 @@ public sealed partial class MainWindow : Window
 {
     private readonly Dictionary<string, NavigationViewItem> _navigationTagSelected;
     private readonly Dictionary<string, Type> _navigationTagTargets;
-
 
     public MainWindow()
     {
@@ -64,7 +57,7 @@ public sealed partial class MainWindow : Window
             .ToDictionary(nav => nav.Tag.ToString()!);
         
         // Navigate to first page in the list
-        var firstItem = NavigationViewControl.MenuItems.OfType<NavigationViewItem>().First();
+        var firstItem = navItems.First();
         NavigationViewControl.SelectedItem = firstItem;
 
         NavigateToTag(firstItem.Tag.ToString()!, new EntranceNavigationTransitionInfo());
@@ -74,7 +67,7 @@ public sealed partial class MainWindow : Window
     {
         NavigationViewControl.IsBackEnabled = ContentFrame.CanGoBack;
 
-        if (ContentFrame.SourcePageType == typeof(Pages.SettingsPage))
+        if (ContentFrame.SourcePageType == typeof(SettingsPage))
         {
             // SettingsItem is not part of NavView.MenuItems, and doesn't have a Tag.
             NavigationViewControl.SelectedItem = NavigationViewControl.SettingsItem;
@@ -95,7 +88,7 @@ public sealed partial class MainWindow : Window
     {
         if (args.IsSettingsInvoked)
         {
-            ContentFrame.Navigate(typeof(Pages.SettingsPage), null, args.RecommendedNavigationTransitionInfo);
+            ContentFrame.Navigate(typeof(SettingsPage), null, args.RecommendedNavigationTransitionInfo);
         } else if (args.InvokedItemContainer != null && (args.InvokedItemContainer.Tag != null))
         {
             var tag = args.InvokedItemContainer.Tag.ToString()!;
@@ -106,5 +99,8 @@ public sealed partial class MainWindow : Window
     private void NavigateToTag(string tag, NavigationTransitionInfo? navigationTransitionInfo)
         => ContentFrame.Navigate(_navigationTagTargets[tag], null, navigationTransitionInfo);
 
+    // It can't be static because it's used in XAML bindings
+#pragma warning disable CA1822
     private string GetAppTitleFromSystem() => AppInfo.Current.DisplayInfo.DisplayName;
+#pragma warning restore CA1822
 }

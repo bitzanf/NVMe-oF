@@ -123,6 +123,27 @@
   <data name="AppDisplayName" xml:space="preserve">
     <value>Správa NVMe-oF Připojení</value>
   </data>
+  <data name="CancelDisks.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Zrušit změny</value>
+  </data>
+  <data name="ConfirmDelete_Cancel" xml:space="preserve">
+    <value>Zrušit</value>
+  </data>
+  <data name="ConfirmDelete_Confirm" xml:space="preserve">
+    <value>Smazat</value>
+  </data>
+  <data name="ConfirmDelete_Title" xml:space="preserve">
+    <value>Opravdu smazat?</value>
+  </data>
+  <data name="ConnectionStatus_Connected" xml:space="preserve">
+    <value>Připojeno</value>
+  </data>
+  <data name="ConnectionStatus_Connecting" xml:space="preserve">
+    <value>Připojování...</value>
+  </data>
+  <data name="ConnectionStatus_Disconnected" xml:space="preserve">
+    <value>Odpojeno</value>
+  </data>
   <data name="DiskConnectionAddress.Header" xml:space="preserve">
     <value>Cílová adresa</value>
   </data>
@@ -141,7 +162,16 @@
   <data name="DiskSetupNav.Content" xml:space="preserve">
     <value>Nastavení disků</value>
   </data>
+  <data name="NoDisksConfigured.Text" xml:space="preserve">
+    <value>Žádné nakonfigurované disky</value>
+  </data>
   <data name="QuickConnectNav.Content" xml:space="preserve">
     <value>Rychlé připojení</value>
+  </data>
+  <data name="RefreshDisks.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Obnovit</value>
+  </data>
+  <data name="SaveDisks.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Uložit změny</value>
   </data>
 </root>

@@ -123,6 +123,27 @@
   <data name="AppDisplayName" xml:space="preserve">
     <value>NVME-oF Connection Management</value>
   </data>
+  <data name="CancelDisks.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Cancel changes</value>
+  </data>
+  <data name="ConfirmDelete_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ConfirmDelete_Confirm" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ConfirmDelete_Title" xml:space="preserve">
+    <value>Really delete?</value>
+  </data>
+  <data name="ConnectionStatus_Connected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="ConnectionStatus_Connecting" xml:space="preserve">
+    <value>Connecting...</value>
+  </data>
+  <data name="ConnectionStatus_Disconnected" xml:space="preserve">
+    <value>Disconnected</value>
+  </data>
   <data name="DiskConnectionAddress.Header" xml:space="preserve">
     <value>Target address</value>
   </data>
@@ -141,7 +162,16 @@
   <data name="DiskSetupNav.Content" xml:space="preserve">
     <value>Disk setup</value>
   </data>
+  <data name="NoDisksConfigured.Text" xml:space="preserve">
+    <value>No disks configured</value>
+  </data>
   <data name="QuickConnectNav.Content" xml:space="preserve">
     <value>Quick connection</value>
+  </data>
+  <data name="RefreshDisks.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="SaveDisks.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Save changes</value>
   </data>
 </root>
