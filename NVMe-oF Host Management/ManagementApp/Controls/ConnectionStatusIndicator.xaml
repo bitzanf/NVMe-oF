@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ReSharper disable Xaml.ConstructorWarning -->
+<UserControl
+    x:Class="ManagementApp.Controls.ConnectionStatusIndicator"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ManagementApp.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Rectangle x:Name="IndicatorRect"
+               ToolTipService.ToolTip="{Binding ConnectionStatus, Mode=OneWay}"
+               Width="{Binding Width}"
+               Height="{Binding Height}"
+               RadiusX="1.5"
+               RadiusY="1.5"
+               Fill="BlueViolet">
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="Connected">
+                    <VisualState.Setters>
+                        <Setter Target="IndicatorRect.Fill" Value="DarkSeaGreen" />
+                    </VisualState.Setters>
+                </VisualState>
+
+                <VisualState x:Name="Disconnected">
+                    <VisualState.Setters>
+                        <Setter Target="IndicatorRect.Fill" Value="IndianRed" />
+                    </VisualState.Setters>
+                </VisualState>
+
+                <VisualState x:Name="Connecting">
+                    <Storyboard RepeatBehavior="Forever">
+                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="IndicatorRect" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)" AutoReverse="True">
+                            <LinearColorKeyFrame Value="Transparent" KeyTime="0:0:0" />
+                            <LinearColorKeyFrame Value="LightGoldenrodYellow" KeyTime="0:0:2" />
+                            <LinearColorKeyFrame Value="Transparent" KeyTime="0:0:4" />
+                        </ColorAnimationUsingKeyFrames>
+                    </Storyboard>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Rectangle>
+</UserControl>
