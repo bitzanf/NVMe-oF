@@ -12,6 +12,7 @@
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:localConverters="using:ManagementApp.Converters"
+    xmlns:localControls="using:ManagementApp.Controls"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -28,11 +29,16 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <localControls:AutoPageHeader Grid.Row="0"
+                                      Grid.Column="0"
+                                      Grid.ColumnSpan="2" />
+
         <StackPanel Orientation="Horizontal"
-                    Grid.Row="0"
+                    Grid.Row="1"
                     Grid.Column="0"
                     Spacing="12">
 
@@ -42,6 +48,14 @@
                     IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" >
 
                 <SymbolIcon Symbol="Refresh" />
+            </Button>
+
+            <Button x:Name="BtnAdd"
+                    x:Uid="AddNewDisk"
+                    Click="BtnAdd_OnClick"
+                    Margin="0,0,12,0">
+
+                <SymbolIcon Symbol="Add" />
             </Button>
 
             <!-- ReSharper disable once Xaml.StaticResourceNotResolved -->
@@ -72,14 +86,14 @@
 
         <TextBlock HorizontalAlignment="Center"
                    TextAlignment="Center"
-                   Grid.Row="0"
+                   Grid.Row="1"
                    Grid.Column="1"
                    Visibility="{x:Bind ViewModel.KnownNoDisks, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" >
             <Run FontWeight="SemiBold" x:Uid="NoDisksConfigured" />
         </TextBlock>
 
         <ItemsControl ItemsSource="{x:Bind ViewModel.Connections}"
-                      Grid.Row="1"
+                      Grid.Row="2"
                       Grid.Column="0"
                       Grid.ColumnSpan="2">
 

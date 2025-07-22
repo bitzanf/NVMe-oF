@@ -9,6 +9,7 @@ namespace ManagementApp.Models;
 
 internal class DiskConnectionModel
 {
+    public required Guid Guid { get; init; }
     public required ConnectionStatusEnum ConnectionStatus { get; set; }
     public required TransportTypeEnum TransportType { get; set; }
     public required AddressFamilyEnum AddressFamily { get; set; }

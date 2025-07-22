@@ -8,7 +8,7 @@ namespace ManagementApp.ViewModels;
 
 internal partial class DiskListViewModel : ObservableBase
 {
-    private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
+    private readonly DispatcherQueue _queue;
     private bool _isLoading, _suppressConnectionsUpdate, _hasChanges;
 
     public bool IsLoading
@@ -36,6 +36,8 @@ internal partial class DiskListViewModel : ObservableBase
         IsLoading = false;
         HasChanges = false;
 
+        _queue = DispatcherQueue.GetForCurrentThread();
+
         _suppressConnectionsUpdate = false;
         Connections.CollectionChanged += Connections_CollectionChanged;
     }
@@ -56,7 +58,7 @@ internal partial class DiskListViewModel : ObservableBase
             Connections.Clear();
         });
 
-         var connections = await App.DriverController.LoadConnections();
+        var connections = App.DriverController.Connections;
 
          await _queue.EnqueueAsync(() =>
          {
@@ -72,6 +74,13 @@ internal partial class DiskListViewModel : ObservableBase
 
              IsLoading = false;
          });
+    }
+
+    public async Task ForceReload()
+    {
+        await _queue.EnqueueAsync(() => IsLoading = true);
+        await App.DriverController.LoadConnections();
+        await LoadConnections();
     }
 
     public void DeleteConnection(DiskConnectionModel connection)

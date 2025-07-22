@@ -4,8 +4,13 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using Windows.Foundation;
+using CommunityToolkit.WinUI.Behaviors;
 using ManagementApp.Views;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
@@ -23,6 +28,13 @@ public sealed partial class MainWindow : Window
 {
     private readonly Dictionary<string, NavigationViewItem> _navigationTagSelected;
     private readonly Dictionary<string, Type> _navigationTagTargets;
+
+    public delegate Task<bool> NavigationRequested();
+    public event NavigationRequested? OnNavigationRequested;
+
+    public static MainWindow? Instance { get; private set; }
+
+    public string? PageHeader => ((NavigationViewItem)NavigationViewControl.SelectedItem)?.Content.ToString();
 
     public MainWindow()
     {
@@ -59,8 +71,37 @@ public sealed partial class MainWindow : Window
         // Navigate to first page in the list
         var firstItem = navItems.First();
         NavigationViewControl.SelectedItem = firstItem;
-
         NavigateToTag(firstItem.Tag.ToString()!, new EntranceNavigationTransitionInfo());
+
+        Instance = this;
+
+        Activated += OnActivated;
+    }
+
+    public Notification ShowNotification(string notification, int msDuration = 0, string? title = null) =>
+        NotificationQueue.Show(notification, msDuration, title);
+
+    public Notification ShowNotification(Notification notification) => NotificationQueue.Show(notification);
+
+    private void OnActivated(object sender, WindowActivatedEventArgs args)
+    {
+        // The Activated event gets raised when focusing the window as well
+        if (App.DriverController.IsConnected) return;
+
+        // TODO: Check kernel connection, possibly ask for service install
+
+        // ...
+        try
+        {
+            App.DriverController.ConnectToDriver(@"\\.\NvmeOfController");
+        }
+        catch (Exception ex)
+        {
+            // TODO: Handle, probably show error dialog...
+        }
+
+        // TODO: Remove ugly hack
+        App.DriverController.LoadConnections();
     }
 
     private void ContentFrame_OnNavigated(object sender, NavigationEventArgs e)
@@ -73,26 +114,43 @@ public sealed partial class MainWindow : Window
             NavigationViewControl.SelectedItem = NavigationViewControl.SettingsItem;
         } else if (ContentFrame.SourcePageType != null)
         {
-            NavigationViewControl.SelectedItem = _navigationTagSelected[ContentFrame.SourcePageType.FullName!];
+            // We may be navigating to a page that is not in the sidebar (i.e. DiskEditPage), in that case show no selected item
+            NavigationViewControl.SelectedItem = _navigationTagSelected.GetValueOrDefault(ContentFrame.SourcePageType.FullName!);
         }
-
-        NavigationViewControl.Header = ((NavigationViewItem)NavigationViewControl.SelectedItem)?.Content.ToString();
     }
 
-    private void MainNavigation_OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
+    private void NavigationViewControl_OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
     {
         if (ContentFrame.CanGoBack) ContentFrame.GoBack();
     }
 
-    private void MainNavigation_OnItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+    private async void NavigationViewControl_OnItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
+        var item = NavigationViewControl.SelectedItem as NavigationViewItem;
+        var invokedTag = args.InvokedItemContainer?.Tag?.ToString();
+
+        if (item != null)
+        {
+            var currentPageType = ContentFrame.CurrentSourcePageType;
+            if (currentPageType.FullName == invokedTag) return;
+
+            var approved = await (OnNavigationRequested?.Invoke() ?? Task.FromResult(true));
+            if (!approved)
+            {
+                NavigationViewControl.SelectedItem = currentPageType == typeof(SettingsPage)
+                    ? NavigationViewControl.SettingsItem
+                    : _navigationTagSelected[currentPageType.FullName!];
+                
+                return;
+            }
+        }
+
         if (args.IsSettingsInvoked)
         {
             ContentFrame.Navigate(typeof(SettingsPage), null, args.RecommendedNavigationTransitionInfo);
-        } else if (args.InvokedItemContainer != null && (args.InvokedItemContainer.Tag != null))
+        } else if (invokedTag != null)
         {
-            var tag = args.InvokedItemContainer.Tag.ToString()!;
-            NavigateToTag(tag, args.RecommendedNavigationTransitionInfo);
+            NavigateToTag(invokedTag, args.RecommendedNavigationTransitionInfo);
         }
     }
 

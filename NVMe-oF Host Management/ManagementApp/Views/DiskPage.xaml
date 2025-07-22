@@ -30,33 +30,38 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+
+        <localControls:AutoPageHeader Grid.Row="0"
+                                      Grid.Column="0"
+                                      Grid.ColumnSpan="3" />
 
         <Button x:Name="BtnRefresh"
                 x:Uid="RefreshDisks"
                 Grid.Column="0"
-                Grid.Row="0" 
+                Grid.Row="1" 
                 Click="BtnRefresh_OnClick"
                 IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" >
             <SymbolIcon Symbol="Refresh" />
         </Button>
 
         <ProgressRing Grid.Column="1"
-                      Grid.Row="0"
+                      Grid.Row="1"
                       IsActive="True"
                       Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
         <TextBlock HorizontalAlignment="Center"
                    TextAlignment="Center"
-                   Grid.Row="0"
+                   Grid.Row="1"
                    Grid.Column="2"
                    Visibility="{x:Bind ViewModel.KnownNoDisks, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" >
             <Run FontWeight="SemiBold" x:Uid="NoDisksConfigured" />
         </TextBlock>
 
         <ItemsControl ItemsSource="{x:Bind ViewModel.Connections}"
-                      Grid.Row="1"
+                      Grid.Row="2"
                       Grid.Column="0"
                       Grid.ColumnSpan="3">
 
@@ -71,6 +76,10 @@
                         <localControls:ConnectionStatusIndicator ConnectionStatus="{Binding ConnectionStatus}" Width="196" Height="4" />
 
                         <controls:SettingsExpander.Items>
+                            <controls:SettingsCard Header="UUID">
+                                <TextBlock Text="{Binding Guid}" />
+                            </controls:SettingsCard>
+
                             <controls:SettingsCard x:Uid="DiskConnectionAddressFamily">
                                 <TextBlock Text="{Binding AddressFamily}" />
                             </controls:SettingsCard>

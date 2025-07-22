@@ -8,6 +8,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using CommunityToolkit.WinUI.Behaviors;
+using Microsoft.UI.Xaml.Media.Animation;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -27,15 +29,28 @@ public sealed partial class DiskSetupPage : Page
     public DiskSetupPage()
     {
         InitializeComponent();
-        
+
         Loaded += async (_, _) => await ViewModel.LoadConnections();
+
+        Loaded += (_, _) => MainWindow.Instance!.OnNavigationRequested += RemindUnsavedChanges_IsExitOk;
+        Unloaded += (_, _) => MainWindow.Instance!.OnNavigationRequested -= RemindUnsavedChanges_IsExitOk;
     }
 
-    private async void BtnRefresh_OnClick(object sender, RoutedEventArgs e) => await ViewModel.LoadConnections();
+    private async void BtnRefresh_OnClick(object sender, RoutedEventArgs e) => await ViewModel.ForceReload();
 
     private void BtnSave_OnClick(object sender, RoutedEventArgs e)
     {
-        throw new System.NotImplementedException();
+        App.DriverController.IntegrateChanges(ViewModel.Connections.ToList());
+        ViewModel.HasChanges = false;
+
+        // TODO: Localize
+        Notification notification = new()
+        {
+            Message = "Changes saved successfully.",
+            Severity = InfoBarSeverity.Success,
+            Duration = TimeSpan.FromSeconds(5)
+        };
+        MainWindow.Instance!.ShowNotification(notification);
     }
 
     private void BtnCancel_OnClick(object sender, RoutedEventArgs e)
@@ -50,41 +65,32 @@ public sealed partial class DiskSetupPage : Page
         if (result == ContentDialogResult.Primary) ViewModel.DeleteConnection(model);
     }
 
-    private void EditCommandCallback(DiskConnectionModel model)
+    private async void EditCommandCallback(DiskConnectionModel model)
     {
-
+        // Check that we have no unsaved changes (or are ok with losing them)
+        var canNavigate = await RemindUnsavedChanges_IsExitOk();
+        if (canNavigate)
+            Frame.Navigate(typeof(DiskEditPage), model.Guid, new EntranceNavigationTransitionInfo());
     }
 
-    // TODO FIX THIS
-    protected override async void OnNavigatingFrom(NavigatingCancelEventArgs e)
+    private void BtnAdd_OnClick(object sender, RoutedEventArgs e)
     {
-        //if (ViewModel.HasChanges)
-        if (new Random().Next(2) == 0)
-        {
-            e.Cancel = true;
-            var result = await ConfirmDeleteDialog.ShowDialog(XamlRoot, ViewModel.Connections.First());
-            if (result == ContentDialogResult.Primary)
-            {
-                e.Cancel = false;
-                Resume();
-            }
-            else
-            {
-                await ViewModel.LoadConnections();
-            }
-        }
-
-        base.OnNavigatingFrom(e);
-        return;
-
-        void Resume()
-        {
-            if (e.NavigationMode == NavigationMode.Back) Frame.GoBack();
-            else Frame.Navigate(e.SourcePageType, e.Parameter, e.NavigationTransitionInfo);
-        }
+        // TODO: Navigate to edit form, pass null as parameter
+        //  set App.DriverController.NewlyConfiguredModel to null to prevent stale preconfigured data from showing in the dialog
+        throw new NotImplementedException();
     }
 
-    internal class CommandEventHandler(Action<DiskConnectionModel> action) : ICommand
+    private async Task<bool> RemindUnsavedChanges_IsExitOk()
+    {
+        // TODO: Actually implement a proper dialog
+        var disk = ViewModel.Connections.FirstOrDefault();
+        if (disk == null) return true;
+
+        var result = await ConfirmDeleteDialog.ShowDialog(XamlRoot, disk);
+        return result == ContentDialogResult.Primary;
+    }
+
+    private class CommandEventHandler(Action<DiskConnectionModel> action) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 

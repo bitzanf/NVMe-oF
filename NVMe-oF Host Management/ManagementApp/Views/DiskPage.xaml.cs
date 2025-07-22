@@ -1,8 +1,5 @@
-using System.Collections.Generic;
-using ManagementApp.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using static ManagementApp.Models.DiskConnectionModel;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -23,5 +20,5 @@ public sealed partial class DiskPage : Page
         Loaded += async (_, _) => await ViewModel.LoadConnections();
     }
 
-    private async void BtnRefresh_OnClick(object sender, RoutedEventArgs e) => await ViewModel.LoadConnections();
+    private async void BtnRefresh_OnClick(object sender, RoutedEventArgs e) => await ViewModel.ForceReload();
 }

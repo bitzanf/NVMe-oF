@@ -7,6 +7,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:behaviors="using:CommunityToolkit.WinUI.Behaviors"
     Title="{x:Bind GetAppTitleFromSystem()}"
     mc:Ignorable="d">
 
@@ -55,9 +57,9 @@
                         Canvas.ZIndex="0"
                         IsTabStop="False"
                         IsTitleBarAutoPaddingEnabled="True"
-                        AlwaysShowHeader="True"
-                        BackRequested="MainNavigation_OnBackRequested"
-                        ItemInvoked="MainNavigation_OnItemInvoked">
+                        AlwaysShowHeader="False"
+                        BackRequested="NavigationViewControl_OnBackRequested"
+                        ItemInvoked="NavigationViewControl_OnItemInvoked">
 
             <NavigationView.MenuItems>
                 <NavigationViewItem x:Uid="DiskPageNav"
@@ -75,11 +77,28 @@
                                     Icon="{ui:FontIcon Glyph=&#xE703;}" />
             </NavigationView.FooterMenuItems>
 
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <Frame x:Name="ContentFrame"
-                       Navigated="ContentFrame_OnNavigated" 
-                       Margin="56, 12, 36, 36" />
-            </ScrollViewer>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="0">
+                    <Frame x:Name="ContentFrame"
+                           Navigated="ContentFrame_OnNavigated" 
+                           Margin="48, 48, 36, 36" />
+
+                </ScrollViewer>
+
+                <InfoBar Grid.Row="0"
+                         VerticalAlignment="Bottom"
+                         HorizontalAlignment="Center"
+                         Margin="24">
+
+                    <interactivity:Interaction.Behaviors>
+                        <behaviors:StackedNotificationsBehavior x:Name="NotificationQueue" />
+                    </interactivity:Interaction.Behaviors>
+                </InfoBar>
+            </Grid>
         </NavigationView>
     </Grid>
 </Window>

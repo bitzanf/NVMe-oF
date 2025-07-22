@@ -6,9 +6,12 @@
     xmlns:local="using:ManagementApp.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:localControls="using:ManagementApp.Controls"
     mc:Ignorable="d">
 
     <Grid>
+        <localControls:AutoPageHeader Grid.Row="0"
+                                      Grid.Column="0"/>
         <TextBlock>aaaa</TextBlock>
     </Grid>
 </Page>

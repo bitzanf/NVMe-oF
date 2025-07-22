@@ -13,7 +13,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Controls\AutoPageHeader.xaml" />
     <None Remove="Views\ConfirmDeleteDialog.xaml" />
+    <None Remove="Views\DiskEditPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,13 +41,25 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.WinUI.Behaviors" Version="8.2.250402" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.250402" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.2.250402" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4188" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\KernelInterface\KernelInterface.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\DiskEditPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Controls\AutoPageHeader.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\ConfirmDeleteDialog.xaml">
