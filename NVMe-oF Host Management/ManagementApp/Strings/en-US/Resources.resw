@@ -129,6 +129,15 @@
   <data name="CancelDisks.ToolTipService.ToolTip" xml:space="preserve">
     <value>Cancel changes</value>
   </data>
+  <data name="ChangesSavedNotification_Error" xml:space="preserve">
+    <value>There was an error saving changes</value>
+  </data>
+  <data name="ChangesSavedNotification_ErrorMessage" xml:space="preserve">
+    <value>Changes were not saved.</value>
+  </data>
+  <data name="ChangesSavedNotification_Success" xml:space="preserve">
+    <value>Changes saved successfully.</value>
+  </data>
   <data name="ConfirmDelete_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
@@ -137,6 +146,15 @@
   </data>
   <data name="ConfirmDelete_Title" xml:space="preserve">
     <value>Really delete?</value>
+  </data>
+  <data name="ConfirmDiscardChanges_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ConfirmDiscardChanges_Confirm" xml:space="preserve">
+    <value>Discard changes</value>
+  </data>
+  <data name="ConfirmDiscardChanges_Title" xml:space="preserve">
+    <value>Unsaved changes</value>
   </data>
   <data name="ConnectionStatus_Connected" xml:space="preserve">
     <value>Connected</value>
@@ -167,6 +185,15 @@
   </data>
   <data name="DiskSetupNav.Content" xml:space="preserve">
     <value>Disk setup</value>
+  </data>
+  <data name="DriverConnectionError_Title" xml:space="preserve">
+    <value>Driver connection failed</value>
+  </data>
+  <data name="ErrorNotification" xml:space="preserve">
+    <value>An error occured</value>
+  </data>
+  <data name="ExitDiscardChangesDialog.Text" xml:space="preserve">
+    <value>Really discard changes?</value>
   </data>
   <data name="NoDisksConfigured.Text" xml:space="preserve">
     <value>No disks configured</value>

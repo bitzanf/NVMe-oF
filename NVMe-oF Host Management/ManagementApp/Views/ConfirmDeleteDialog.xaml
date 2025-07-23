@@ -10,15 +10,15 @@
 
     <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <TextBlock TextWrapping="Wrap">
-            <Run Text="{x:Bind _connection.Guid}" />
+            <Run Text="{x:Bind _connection.Descriptor.Guid}" />
             <LineBreak />
             <Run Text="{x:Bind AddressTypeString}" />
             <LineBreak />
             <Run Text="{x:Bind AddressString}" />
             <LineBreak />
-            <Run Text="{x:Bind _connection.Nqn}" />
+            <Run Text="{x:Bind _connection.Descriptor.Nqn}" />
             <LineBreak />
-            <Run Text="{x:Bind _connection.NtObjectPath}" />
+            <Run Text="{x:Bind _connection.Descriptor.NtObjectPath}" />
         </TextBlock>
     </StackPanel>
 </Page>

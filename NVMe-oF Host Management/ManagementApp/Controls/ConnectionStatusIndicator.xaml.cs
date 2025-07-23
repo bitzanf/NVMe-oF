@@ -2,7 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 
-using ConnectionStatusEnum = ManagementApp.Models.DiskConnectionModel.ConnectionStatusEnum;
+using ConnectionStatus = KernelInterface.ConnectionStatus;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -13,9 +13,9 @@ namespace ManagementApp.Controls;
 // https://stackoverflow.com/questions/40184194/xaml-binding-not-working-on-dependency-property
 internal sealed partial class ConnectionStatusIndicator : UserControl
 {
-    public ConnectionStatusEnum ConnectionStatus
+    public ConnectionStatus ConnectionStatus
     {
-        get => (ConnectionStatusEnum)GetValue(ConnectionStatusDependencyProperty);
+        get => (ConnectionStatus)GetValue(ConnectionStatusDependencyProperty);
         set
         {
             SetValue(ConnectionStatusDependencyProperty, value);
@@ -31,9 +31,9 @@ internal sealed partial class ConnectionStatusIndicator : UserControl
 
     public static readonly DependencyProperty ConnectionStatusDependencyProperty = DependencyProperty.Register(
         nameof(ConnectionStatus),
-        typeof(ConnectionStatusEnum),
+        typeof(ConnectionStatus),
         typeof(ConnectionStatusIndicator),
-        new PropertyMetadata(ConnectionStatusEnum.Disconnected)
+        new PropertyMetadata(ConnectionStatus.Disconnected)
     );
 
     public static readonly DependencyProperty RadiusDependencyProperty = DependencyProperty.Register(
@@ -50,7 +50,7 @@ internal sealed partial class ConnectionStatusIndicator : UserControl
         Loaded += (_, _) => GoToState(ConnectionStatus);
     }
 
-    private void GoToState(ConnectionStatusEnum status)
+    private void GoToState(ConnectionStatus status)
     {
         if (!Enum.IsDefined(status)) throw new ArgumentException(status.ToString(), nameof(status));
         VisualStateManager.GoToState(this, status.ToString(), false);

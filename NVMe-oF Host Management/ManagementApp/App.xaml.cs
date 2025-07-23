@@ -11,7 +11,7 @@ namespace ManagementApp
     /// </summary>
     public partial class App : Application
     {
-        private Window? _window;
+        private MainWindow? _window;
 
         internal static DriverController DriverController = new();
 
@@ -32,6 +32,7 @@ namespace ManagementApp
         {
             _window = new MainWindow();
             _window.Activate();
+            _window.InitializeConnection();
         }
     }
 }

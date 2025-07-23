@@ -4,6 +4,7 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="DataMarshalling/DataMarshalling.csproj" Id="82b6e82e-1d96-4a0a-8ff4-7c3b927aed81" />
   <Project Path="KernelInterface/KernelInterface.csproj" Id="2398ec24-662e-4828-a3ed-e69253359ab1" />
   <Project Path="ManagementApp/ManagementApp.csproj">
     <Platform Solution="*|ARM64" Project="ARM64" />

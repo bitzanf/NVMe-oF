@@ -1,6 +1,8 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using KernelInterface.Interop;
 
 namespace KernelInterface
@@ -8,6 +10,8 @@ namespace KernelInterface
     public class IoControlAccess : IDriverControl, IDisposable
     {
         private readonly SafeFileHandle _handle;
+
+        public string HostNqn { get; set; }
 
         public IoControlAccess(string devicePath)
         {
@@ -32,5 +36,35 @@ namespace KernelInterface
         }
 
         public IntPtr GetRawHandle() => _handle.DangerousGetHandle();
+        
+        public List<DiskDescriptor> GetConfiguredConnections()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Guid AddConnection(DiskDescriptor descriptor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveConnection(Guid connectionId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ModifyConnection(DiskDescriptor newDescriptor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ConnectionStatus GetConnectionStatus(Guid connectionId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<DiskDescriptor>> DiscoveryRequest(NetworkConnection network)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

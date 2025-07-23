@@ -1,7 +1,7 @@
 ﻿using Microsoft.UI.Xaml.Data;
 using System;
 using Windows.ApplicationModel.Resources;
-using ConnectionStatusEnum = ManagementApp.Models.DiskConnectionModel.ConnectionStatusEnum;
+using ConnectionStatus = KernelInterface.ConnectionStatus;
 using FontIcon = Microsoft.UI.Xaml.Controls.FontIcon;
 
 namespace ManagementApp.Converters;
@@ -10,9 +10,9 @@ internal partial class ConnectionStatusToIconConverter : IValueConverter
 {
     public object? Convert(object value, Type targetType, object parameter, string language)
     {
-        if (value is not ConnectionStatusEnum status) return null;
+        if (value is not ConnectionStatus status) return null;
 
-        return status == ConnectionStatusEnum.Connected
+        return status == ConnectionStatus.Connected
             ? new FontIcon { Glyph = "\xE8CE" }
             : new FontIcon { Glyph = "\xE8CD" };
     }
@@ -25,7 +25,7 @@ internal partial class ConnectionStatusToTextConverter : IValueConverter
 {
     public object? Convert(object value, Type targetType, object parameter, string language)
     {
-        if (value is not ConnectionStatusEnum) return null;
+        if (value is not ConnectionStatus) return null;
 
         var loader = ResourceLoader.GetForViewIndependentUse();
         return loader.GetString($"ConnectionStatus_{value}");

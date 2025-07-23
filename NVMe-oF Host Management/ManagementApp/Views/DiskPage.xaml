@@ -68,32 +68,32 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="model:DiskConnectionModel">
                     <controls:SettingsExpander VerticalAlignment="Top"
-                                               Header="{Binding Path=NtObjectPath}"
-                                               Description="{Binding Path=Nqn}"
+                                               Header="{Binding Path=Descriptor.NtObjectPath}"
+                                               Description="{Binding Path=Descriptor.Nqn}"
                                                HeaderIcon="{Binding ConnectionStatus, Converter={StaticResource ConnectionStatusToIconConverter}}"
                                                Margin="0,12,0,0">
-                    
+
                         <localControls:ConnectionStatusIndicator ConnectionStatus="{Binding ConnectionStatus}" Width="196" Height="4" />
 
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard Header="UUID">
-                                <TextBlock Text="{Binding Guid}" />
+                                <TextBlock Text="{Binding Descriptor.Guid}" />
                             </controls:SettingsCard>
 
                             <controls:SettingsCard x:Uid="DiskConnectionAddressFamily">
-                                <TextBlock Text="{Binding AddressFamily}" />
+                                <TextBlock Text="{Binding  Descriptor.NetworkConnection.AddressFamily}" />
                             </controls:SettingsCard>
 
                             <controls:SettingsCard x:Uid="DiskConnectionAddress">
-                                <TextBlock Text="{Binding TransportAddress}" />
+                                <TextBlock Text="{Binding Descriptor.NetworkConnection.TransportAddress}" />
                             </controls:SettingsCard>
 
                             <controls:SettingsCard x:Uid="DiskConnectionPort">
-                                <TextBlock Text="{Binding TransportServiceId}" />
+                                <TextBlock Text="{Binding Descriptor.NetworkConnection.TransportServiceId}" />
                             </controls:SettingsCard>
 
                             <controls:SettingsCard x:Uid="DiskConnectionTransportType">
-                                <TextBlock Text="{Binding TransportType, Mode=OneWay, Converter={StaticResource StringToUpperConverter}}" />
+                                <TextBlock Text="{Binding Descriptor.NetworkConnection.TransportType, Converter={StaticResource StringToUpperConverter}}" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
 

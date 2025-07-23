@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Resources;
+using KernelInterface;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -16,8 +17,10 @@ internal sealed partial class ConfirmDeleteDialog : Page
 {
     private readonly Models.DiskConnectionModel _connection;
 
-    public string AddressTypeString => $"{_connection.AddressFamily} / {_connection.TransportType}";
-    public string AddressString => $"{_connection.TransportAddress} : {_connection.TransportServiceId}";
+    private NetworkConnection NetworkConnection => _connection.Descriptor.NetworkConnection;
+
+    public string AddressTypeString => $"{NetworkConnection.AddressFamily} / {NetworkConnection.TransportType}";
+    public string AddressString => $"{NetworkConnection.TransportAddress} : {NetworkConnection.TransportServiceId}";
 
 
     private ConfirmDeleteDialog(Models.DiskConnectionModel connection)

@@ -1,3 +1,4 @@
+using ManagementApp.Converters;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -20,5 +21,6 @@ public sealed partial class DiskPage : Page
         Loaded += async (_, _) => await ViewModel.LoadConnections();
     }
 
-    private async void BtnRefresh_OnClick(object sender, RoutedEventArgs e) => await ViewModel.ForceReload();
+    private async void BtnRefresh_OnClick(object sender, RoutedEventArgs e)
+        => await ExceptionToNotificationConverter.WrapExceptionsAsync(ViewModel.ForceReload);
 }

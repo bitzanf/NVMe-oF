@@ -1,20 +1,19 @@
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Windows.ApplicationModel;
-using Windows.Foundation;
 using CommunityToolkit.WinUI.Behaviors;
+using ManagementApp.Converters;
 using ManagementApp.Views;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml.Navigation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Windows.ApplicationModel;
+using Windows.ApplicationModel.Resources;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -74,18 +73,12 @@ public sealed partial class MainWindow : Window
         NavigateToTag(firstItem.Tag.ToString()!, new EntranceNavigationTransitionInfo());
 
         Instance = this;
-
-        Activated += OnActivated;
     }
-
-    public Notification ShowNotification(string notification, int msDuration = 0, string? title = null) =>
-        NotificationQueue.Show(notification, msDuration, title);
 
     public Notification ShowNotification(Notification notification) => NotificationQueue.Show(notification);
 
-    private void OnActivated(object sender, WindowActivatedEventArgs args)
+    public void InitializeConnection()
     {
-        // The Activated event gets raised when focusing the window as well
         if (App.DriverController.IsConnected) return;
 
         // TODO: Check kernel connection, possibly ask for service install
@@ -97,7 +90,15 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            // TODO: Handle, probably show error dialog...
+            var loader = ResourceLoader.GetForViewIndependentUse();
+
+            var notification = new Notification
+            {
+                Title = loader.GetString("DriverConnectionError_Title"),
+                Message = ex.Message,
+                Severity = InfoBarSeverity.Error
+            };
+            ShowNotification(notification);
         }
 
         // TODO: Remove ugly hack
@@ -107,16 +108,7 @@ public sealed partial class MainWindow : Window
     private void ContentFrame_OnNavigated(object sender, NavigationEventArgs e)
     {
         NavigationViewControl.IsBackEnabled = ContentFrame.CanGoBack;
-
-        if (ContentFrame.SourcePageType == typeof(SettingsPage))
-        {
-            // SettingsItem is not part of NavView.MenuItems, and doesn't have a Tag.
-            NavigationViewControl.SelectedItem = NavigationViewControl.SettingsItem;
-        } else if (ContentFrame.SourcePageType != null)
-        {
-            // We may be navigating to a page that is not in the sidebar (i.e. DiskEditPage), in that case show no selected item
-            NavigationViewControl.SelectedItem = _navigationTagSelected.GetValueOrDefault(ContentFrame.SourcePageType.FullName!);
-        }
+        SelectNavItemByType(ContentFrame.SourcePageType);
     }
 
     private void NavigationViewControl_OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
@@ -125,40 +117,46 @@ public sealed partial class MainWindow : Window
     }
 
     private async void NavigationViewControl_OnItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
-    {
-        var item = NavigationViewControl.SelectedItem as NavigationViewItem;
-        var invokedTag = args.InvokedItemContainer?.Tag?.ToString();
+        => await ExceptionToNotificationConverter.WrapExceptionsAsync(async () => {
+            var item = NavigationViewControl.SelectedItem as NavigationViewItem;
+            var invokedTag = args.InvokedItemContainer?.Tag?.ToString();
 
-        if (item != null)
-        {
-            var currentPageType = ContentFrame.CurrentSourcePageType;
-            if (currentPageType.FullName == invokedTag) return;
-
-            var approved = await (OnNavigationRequested?.Invoke() ?? Task.FromResult(true));
-            if (!approved)
+            if (item != null)
             {
-                NavigationViewControl.SelectedItem = currentPageType == typeof(SettingsPage)
-                    ? NavigationViewControl.SettingsItem
-                    : _navigationTagSelected[currentPageType.FullName!];
-                
-                return;
-            }
-        }
+                var currentPageType = ContentFrame.CurrentSourcePageType;
+                if (currentPageType.FullName == invokedTag) return;
 
-        if (args.IsSettingsInvoked)
-        {
-            ContentFrame.Navigate(typeof(SettingsPage), null, args.RecommendedNavigationTransitionInfo);
-        } else if (invokedTag != null)
-        {
-            NavigateToTag(invokedTag, args.RecommendedNavigationTransitionInfo);
-        }
-    }
+                var approved = await (OnNavigationRequested?.Invoke() ?? Task.FromResult(true));
+                if (!approved)
+                {
+                    SelectNavItemByType(currentPageType);
+                    return;
+                }
+            }
+
+            if (args.IsSettingsInvoked)
+            {
+                ContentFrame.Navigate(typeof(SettingsPage), null, args.RecommendedNavigationTransitionInfo);
+            }
+            else if (invokedTag != null)
+            {
+                NavigateToTag(invokedTag, args.RecommendedNavigationTransitionInfo);
+            }
+        });
 
     private void NavigateToTag(string tag, NavigationTransitionInfo? navigationTransitionInfo)
         => ContentFrame.Navigate(_navigationTagTargets[tag], null, navigationTransitionInfo);
 
-    // It can't be static because it's used in XAML bindings
+    // SettingsItem is not part of NavView.MenuItems, and doesn't have a Tag
+    // We may be navigating to a page that is not in the sidebar (i.e. DiskEditPage), in that case show no selected item
+    private void SelectNavItemByType(Type type)
+        => NavigationViewControl.SelectedItem =
+            type == typeof(SettingsPage)
+                ? NavigationViewControl.SettingsItem as NavigationViewItem
+                : _navigationTagSelected.GetValueOrDefault(type.FullName ?? string.Empty);
+
 #pragma warning disable CA1822
+    // It can't be static because it's used in XAML bindings
     private string GetAppTitleFromSystem() => AppInfo.Current.DisplayInfo.DisplayName;
 #pragma warning restore CA1822
 }

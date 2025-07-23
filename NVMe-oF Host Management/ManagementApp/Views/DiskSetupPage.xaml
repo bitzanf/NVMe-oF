@@ -100,8 +100,8 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="model:DiskConnectionModel">
                     <controls:SettingsCard VerticalAlignment="Top"
-                                           Header="{Binding Path=NtObjectPath}"
-                                           Description="{Binding Path=Nqn}"
+                                           Header="{Binding Path=Descriptor.NtObjectPath}"
+                                           Description="{Binding Path=Descriptor.Nqn}"
                                            HeaderIcon="{Binding ConnectionStatus, Converter={StaticResource ConnectionStatusToIconConverter}}"
                                            Margin="0,12,0,0">
 

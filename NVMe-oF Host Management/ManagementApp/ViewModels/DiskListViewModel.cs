@@ -73,6 +73,7 @@ internal partial class DiskListViewModel : ObservableBase
              }
 
              IsLoading = false;
+             HasChanges = false;
          });
     }
 
