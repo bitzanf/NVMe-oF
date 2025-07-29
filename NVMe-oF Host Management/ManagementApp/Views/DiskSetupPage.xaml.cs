@@ -1,12 +1,12 @@
 using CommunityToolkit.WinUI.Behaviors;
 using ManagementApp.Models;
 using ManagementApp.ViewModels;
+using ManagementApp.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.ApplicationModel.Resources;
@@ -49,24 +49,7 @@ public sealed partial class DiskSetupPage : Page
         App.DriverController.IntegrateChanges(ViewModel.Connections.ToList());
         ViewModel.HasChanges = false;
 
-        var loader = ResourceLoader.GetForViewIndependentUse();
-
-        Notification notification = App.DriverController.CommitChanges()
-            ? new()
-            {
-                Title = loader.GetString("ChangesSavedNotification_Success"),
-                Duration = TimeSpan.FromSeconds(5),
-                Severity = InfoBarSeverity.Success
-            }
-            : new()
-            {
-                Title = loader.GetString("ChangesSavedNotification_Error"),
-                Message = loader.GetString("ChangesSavedNotification_ErrorMessage"),
-                Duration = TimeSpan.FromSeconds(15),
-                Severity = InfoBarSeverity.Error
-            };
-
-        MainWindow.Instance!.ShowNotification(notification);
+        NotificationHelper.ShowChangeSaveStatus(App.DriverController.CommitChanges());
     }
 
     private async void BtnCancel_OnClick(object sender, RoutedEventArgs e)
@@ -91,8 +74,6 @@ public sealed partial class DiskSetupPage : Page
 
     private void BtnAdd_OnClick(object sender, RoutedEventArgs e)
     {
-        //  set to null to prevent stale preconfigured data from showing in the dialog
-        App.DriverController.NewlyConfiguredModel = null;
         Frame.Navigate(typeof(DiskEditPage), null, new EntranceNavigationTransitionInfo());
     }
 

@@ -7,15 +7,70 @@
     xmlns:localControls="using:ManagementApp.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:enums="using:KernelInterface"
     mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
 
     <StackPanel Orientation="Vertical"
                 Spacing="12">
         <localControls:AutoPageHeader x:Uid="DiskEditPageHeader" />
 
-        <TextBlock>
-            <Run>UUID: </Run>
-            <Run x:Name="UuidRun" />
+        <TextBlock Visibility="{x:Bind ShowInfo, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                   FontSize="20">
+            <Run>{</Run><Run Text="{x:Bind ViewModel.Guid}" /><Run>}</Run>
+            <Run Foreground="LightGray"> @ </Run>
+            <Run Text="{x:Bind ViewModel.NtObjectPath}" />
         </TextBlock>
+
+        <TextBox Header="NQN"
+                 Text="{x:Bind ViewModel.Nqn, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"/>
+
+        <ComboBox x:Uid="DiskConnectionAddressFamily"
+                  Width="160"
+                  ItemsSource="{ui:EnumValues Type=enums:AddressFamily}"
+                  SelectedItem="{x:Bind ViewModel.AddressFamily, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+
+        <TextBox x:Uid="DiskConnectionAddress"
+                 Text="{x:Bind ViewModel.TransportAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+
+        <TextBox x:Uid="DiskConnectionPort"
+                 Width="160"
+                 HorizontalAlignment="Left"
+                 Text="{x:Bind ViewModel.TransportServiceId, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+
+        <ComboBox x:Uid="DiskConnectionTransportType"
+                  Width="160"
+                  ItemsSource="{ui:EnumValues Type=enums:TransportType}"
+                  SelectedItem="{x:Bind ViewModel.TransportType, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+
+        <StackPanel Orientation="Horizontal"
+                    Spacing="12"
+                    VerticalAlignment="Bottom">
+
+            <!-- ReSharper disable once Xaml.StaticResourceNotResolved -->
+            <Button x:Name="BtnSave"
+                    x:Uid="SaveDisks"
+                    Click="BtnSave_OnClick"
+                    IsEnabled="{x:Bind ViewModel.HasChanges, Mode=OneWay}"
+                    Style="{StaticResource AccentButtonStyle}">
+
+                <SymbolIcon Symbol="Save" />
+            </Button>
+
+            <!-- ReSharper disable once Xaml.StaticResourceNotResolved -->
+            <Button x:Name="BtnCancel"
+                    x:Uid="CancelDisks"
+                    Click="BtnCancel_OnClick"
+                    IsEnabled="{x:Bind ViewModel.HasChanges, Mode=OneWay}"
+                    Style="{StaticResource AccentButtonStyle}">
+
+                <SymbolIcon Symbol="Cancel" />
+            </Button>
+        </StackPanel>
     </StackPanel>
 </Page>

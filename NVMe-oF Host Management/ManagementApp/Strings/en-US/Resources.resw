@@ -180,6 +180,12 @@
   <data name="DiskEditPageHeader.CustomHeader" xml:space="preserve">
     <value>Edit disk</value>
   </data>
+  <data name="DiskNotFound_Message" xml:space="preserve">
+    <value>No configuration was found for ID {0}</value>
+  </data>
+  <data name="DiskNotFound_Title" xml:space="preserve">
+    <value>Disk not found</value>
+  </data>
   <data name="DiskPageNav.Content" xml:space="preserve">
     <value>Connected disks</value>
   </data>
@@ -206,5 +212,14 @@
   </data>
   <data name="SaveDisks.ToolTipService.ToolTip" xml:space="preserve">
     <value>Save changes</value>
+  </data>
+  <data name="ValidationError_Address" xml:space="preserve">
+    <value>Invalid address</value>
+  </data>
+  <data name="ValidationError_Msg_Title" xml:space="preserve">
+    <value>Invalid configuration</value>
+  </data>
+  <data name="ValidationError_Nqn" xml:space="preserve">
+    <value>Invalid NQN</value>
   </data>
 </root>

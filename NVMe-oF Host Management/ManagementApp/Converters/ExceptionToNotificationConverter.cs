@@ -58,6 +58,6 @@ public static class ExceptionToNotificationConverter
             Message = ex.ToString()
         };
 
-        MainWindow.Instance.ShowNotification(notification);
+        MainWindow.Instance?.ShowNotification(notification);
     }
 }

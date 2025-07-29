@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KernelInterface;
-using static ManagementApp.Models.DiskConnectionModel;
 
 namespace ManagementApp.Models;
 
@@ -12,8 +11,6 @@ internal partial class DriverController : ViewModels.ObservableBase
     private IDriverControl? _driverControl = null;
 
     public bool IsConnected => _driverControl != null;
-
-    public DiskConnectionModel? NewlyConfiguredModel;
 
     public List<DiskConnectionModel> Connections { get; private set; } = [];
 
@@ -44,6 +41,9 @@ internal partial class DriverController : ViewModels.ObservableBase
 
     public bool CommitChanges()
     {
+        // TODO: is this the best API choice?
+        //  the process is *always* Integrate(); Commit();
+
         if (_driverControl == null) return false;
 
         lock (_driverControl)
@@ -57,8 +57,15 @@ internal partial class DriverController : ViewModels.ObservableBase
 
     public void IntegrateChanges(IReadOnlyList<DiskConnectionModel> connections)
     {
-        // TODO: probably some kind of audit log for easier kernel commits...
+        // TODO: is this a good idea...?
         Connections = connections.ToList();
+    }
+
+    public void IntegrateChanges(DiskConnectionModel connection)
+    {
+        // TODO: probably some kind of audit log for easier kernel commits...
+        //  Also detect changes vs newly configured connections...
+        Connections.Add(connection);
     }
 
     private void LoadConnectionsInternal()
@@ -117,7 +124,6 @@ internal partial class DriverController : ViewModels.ObservableBase
                     Guid = Guid.NewGuid()
                 }
             }
-
         ];
     }
 }

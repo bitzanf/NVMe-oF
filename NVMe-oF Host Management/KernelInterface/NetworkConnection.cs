@@ -2,12 +2,14 @@
 
 namespace KernelInterface
 {
-    public struct NetworkConnection
+    public class NetworkConnection
     {
         public TransportType TransportType { get; set; }
         public AddressFamily AddressFamily { get; set; }
         public ushort TransportServiceId { get; set; }
         public string TransportAddress { get; set; }
+
+        public NetworkConnection Clone() => (NetworkConnection)MemberwiseClone();
     }
 
     public enum TransportType
