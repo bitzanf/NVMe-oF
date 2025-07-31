@@ -1,17 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- ReSharper disable Xaml.ConstructorWarning -->
 <Page
+    x:Name="QuickConnectPageForContext"
     x:Class="ManagementApp.Views.QuickConnectionPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:ManagementApp.Pages"
+    xmlns:local="using:ManagementApp.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:localControls="using:ManagementApp.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:enums="using:KernelInterface"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:model="using:ManagementApp.Models"
+    xmlns:localConverters="using:ManagementApp.Converters"
     mc:Ignorable="d">
 
-    <Grid>
+    <Page.Resources>
+        <localConverters:StringToUpperConverter x:Key="StringToUpperConverter" />
+    </Page.Resources>
+
+    <Grid RowSpacing="24"
+          ColumnSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
         <localControls:AutoPageHeader Grid.Row="0"
-                                      Grid.Column="0"/>
-        <TextBlock>aaaa</TextBlock>
+                                      Grid.Column="0"
+                                      Grid.ColumnSpan="2" />
+
+        <ComboBox Grid.Row="1"
+                  Grid.Column="0"
+                  x:Uid="DiskConnectionAddressFamily"
+                  Width="160"
+                  ItemsSource="{ui:EnumValues Type=enums:AddressFamily}"
+                  SelectedItem="{x:Bind ViewModel.DiscoveryController.AddressFamily, Mode=TwoWay}" />
+
+        <TextBox Grid.Row="1"
+                 Grid.Column="1"
+                 Grid.ColumnSpan="2"
+                 x:Uid="DiskConnectionAddress"
+                 Text="{x:Bind ViewModel.DiscoveryController.TransportAddress, Mode=TwoWay}" />
+
+        <ComboBox Grid.Row="2"
+                  Grid.Column="0"
+                  x:Uid="DiskConnectionTransportType"
+                  Width="160"
+                  ItemsSource="{ui:EnumValues Type=enums:TransportType}"
+                  SelectedItem="{x:Bind ViewModel.DiscoveryController.TransportType, Mode=TwoWay}" />
+
+        <TextBox Grid.Row="2"
+                 Grid.Column="1"
+                 x:Uid="DiskConnectionPort"
+                 Width="160"
+                 HorizontalAlignment="Left"
+                 Text="{x:Bind ViewModel.DiscoveryController.TransportServiceId, Mode=TwoWay}" />
+
+        <!-- ReSharper disable once Xaml.StaticResourceNotResolved -->
+        <Button Grid.Row="2"
+                Grid.Column="2"
+                x:Name="BtnConnect"
+                x:Uid="QuickConnectDiscovery"
+                Click="BtnConnect_OnClick"
+                VerticalAlignment="Bottom"
+                Style="{StaticResource AccentButtonStyle}" />
+
+        <ItemsControl ItemsSource="{x:Bind ViewModel.Connections}"
+              Grid.Row="3"
+              Grid.Column="0"
+              Grid.ColumnSpan="3">
+
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="model:DiskConnectionModel">
+                    <controls:SettingsExpander VerticalAlignment="Top"
+                                       Header="{Binding Path=Descriptor.Nqn}"
+                                       HeaderIcon="{ui:FontIcon Glyph=&#xEDA2;}"
+                                       Margin="0,12,0,0">
+
+                        <Button x:Name="BtnAdd"
+                                x:Uid="AddNewDisk"
+                                Command="{Binding ElementName=QuickConnectPageForContext, Path=ConnectCommand}"
+                                CommandParameter="{Binding}">
+
+                            <SymbolIcon Symbol="Add" />
+                        </Button>
+
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard x:Uid="DiskConnectionAddressFamily">
+                                <TextBlock Text="{Binding  Descriptor.NetworkConnection.AddressFamily}" />
+                            </controls:SettingsCard>
+
+                            <controls:SettingsCard x:Uid="DiskConnectionAddress">
+                                <TextBlock Text="{Binding Descriptor.NetworkConnection.TransportAddress}" />
+                            </controls:SettingsCard>
+
+                            <controls:SettingsCard x:Uid="DiskConnectionPort">
+                                <TextBlock Text="{Binding Descriptor.NetworkConnection.TransportServiceId}" />
+                            </controls:SettingsCard>
+
+                            <controls:SettingsCard x:Uid="DiskConnectionTransportType">
+                                <TextBlock Text="{Binding Descriptor.NetworkConnection.TransportType, Converter={StaticResource StringToUpperConverter}}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+
+                    </controls:SettingsExpander>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
     </Grid>
 </Page>

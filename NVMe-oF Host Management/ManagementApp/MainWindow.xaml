@@ -69,6 +69,10 @@
                 <NavigationViewItem x:Uid="DiskSetupNav"
                                     Tag="ManagementApp.Views.DiskSetupPage"
                                     Icon="{ui:FontIcon Glyph=&#xE835;}" />
+
+                <NavigationViewItem x:Uid="StatsNav"
+                                    Tag="ManagementApp.Views.StatsPage"
+                                    Icon="{ui:FontIcon Glyph=&#xE9D2;}"/>
             </NavigationView.MenuItems>
 
             <NavigationView.FooterMenuItems>

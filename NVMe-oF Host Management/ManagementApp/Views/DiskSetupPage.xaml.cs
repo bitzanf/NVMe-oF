@@ -1,15 +1,12 @@
-using CommunityToolkit.WinUI.Behaviors;
 using ManagementApp.Models;
 using ManagementApp.ViewModels;
 using ManagementApp.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Windows.ApplicationModel.Resources;
 using ManagementApp.Converters;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -24,8 +21,8 @@ public sealed partial class DiskSetupPage : Page
 {
     internal DiskListViewModel ViewModel = new();
 
-    public ICommand DeleteCommand => new CommandEventHandler(DeleteCommandCallback);
-    public ICommand EditCommand => new CommandEventHandler(EditCommandCallback);
+    public ICommand DeleteCommand => new DiskCommandEventHandler(DeleteCommandCallback);
+    public ICommand EditCommand => new DiskCommandEventHandler(EditCommandCallback);
 
     public DiskSetupPage()
     {
@@ -83,19 +80,5 @@ public sealed partial class DiskSetupPage : Page
 
         var result = await UnsavedChangesDialog.ShowDialog(XamlRoot);
         return result == ContentDialogResult.Primary;
-    }
-
-    private class CommandEventHandler(Action<DiskConnectionModel> action) : ICommand
-    {
-        public event EventHandler? CanExecuteChanged;
-
-        public bool CanExecute(object? parameter) => true;
-
-        public void Execute(object? parameter)
-        {
-            if (parameter is not DiskConnectionModel model) return;
-
-            action(model);
-        }
     }
 }

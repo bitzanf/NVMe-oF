@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Resources;
+using ManagementApp.Models;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -82,11 +83,24 @@ public sealed partial class MainWindow : Window
         if (App.DriverController.IsConnected) return;
 
         // TODO: Check kernel connection, possibly ask for service install
+        Helpers.DriverServiceHelper service = new();
+        if (!service.IsPresent)
+        {
+            // TODO: strongly notify the user and possibly exit
+        } else if (!service.IsRunning)
+        {
+            // TODO: Show a warning dialog that the driver service is not running
+            //  and maybe navigate to Settings (depending on user's choice)
 
+            ContentFrame.Navigate(typeof(SettingsPage));
+            SelectNavItemByType(typeof(SettingsPage));
+        }
+
+        // TODO: maybe Task.Run() to not block the UI thread...
         // ...
         try
         {
-            App.DriverController.ConnectToDriver(@"\\.\NvmeOfController");
+            App.DriverController.ConnectToDriver(DriverController.DevicePath);
         }
         catch (Exception ex)
         {

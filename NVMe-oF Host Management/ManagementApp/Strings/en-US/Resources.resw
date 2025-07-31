@@ -165,6 +165,9 @@
   <data name="ConnectionStatus_Disconnected" xml:space="preserve">
     <value>Disconnected</value>
   </data>
+  <data name="DeviceNotPresent" xml:space="preserve">
+    <value>Device not present!</value>
+  </data>
   <data name="DiskConnectionAddress.Header" xml:space="preserve">
     <value>Target address</value>
   </data>
@@ -204,6 +207,9 @@
   <data name="NoDisksConfigured.Text" xml:space="preserve">
     <value>No disks configured</value>
   </data>
+  <data name="QuickConnectDiscovery.Content" xml:space="preserve">
+    <value>Connect</value>
+  </data>
   <data name="QuickConnectNav.Content" xml:space="preserve">
     <value>Quick connection</value>
   </data>
@@ -212,6 +218,9 @@
   </data>
   <data name="SaveDisks.ToolTipService.ToolTip" xml:space="preserve">
     <value>Save changes</value>
+  </data>
+  <data name="StatsNav.Content" xml:space="preserve">
+    <value>Statistics</value>
   </data>
   <data name="ValidationError_Address" xml:space="preserve">
     <value>Invalid address</value>

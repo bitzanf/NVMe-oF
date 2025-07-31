@@ -165,6 +165,9 @@
   <data name="ConnectionStatus_Disconnected" xml:space="preserve">
     <value>Odpojeno</value>
   </data>
+  <data name="DeviceNotPresent" xml:space="preserve">
+    <value>Zařízení nenalezeno!</value>
+  </data>
   <data name="DiskConnectionAddress.Header" xml:space="preserve">
     <value>Cílová adresa</value>
   </data>
@@ -204,6 +207,9 @@
   <data name="NoDisksConfigured.Text" xml:space="preserve">
     <value>Žádné nakonfigurované disky</value>
   </data>
+  <data name="QuickConnectDiscovery.Content" xml:space="preserve">
+    <value>Připojit</value>
+  </data>
   <data name="QuickConnectNav.Content" xml:space="preserve">
     <value>Rychlé připojení</value>
   </data>
@@ -212,6 +218,9 @@
   </data>
   <data name="SaveDisks.ToolTipService.ToolTip" xml:space="preserve">
     <value>Uložit změny</value>
+  </data>
+  <data name="StatsNav.Content" xml:space="preserve">
+    <value>Statistiky</value>
   </data>
   <data name="ValidationError_Address" xml:space="preserve">
     <value>Neplatná adresa</value>

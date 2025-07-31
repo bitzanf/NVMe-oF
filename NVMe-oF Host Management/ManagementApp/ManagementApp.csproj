@@ -16,6 +16,7 @@
     <None Remove="Controls\AutoPageHeader.xaml" />
     <None Remove="Views\ConfirmDeleteDialog.xaml" />
     <None Remove="Views\DiskEditPage.xaml" />
+    <None Remove="Views\StatsPage.xaml" />
     <None Remove="Views\UnsavedChangesDialog.xaml" />
   </ItemGroup>
 
@@ -48,9 +49,15 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4188" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.7" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\KernelInterface\KernelInterface.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\StatsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\UnsavedChangesDialog.xaml">

@@ -21,6 +21,18 @@ public static class ExceptionToNotificationConverter
         }
     }
 
+    public static void WrapExceptions(Action callback)
+    {
+        try
+        {
+            callback();
+        }
+        catch (Exception e)
+        {
+            ShowNotification(e);
+        }
+    }
+
     public static async Task<T> WrapExceptionsAsync<T>(Func<Task<T>> callback)
     {
         try

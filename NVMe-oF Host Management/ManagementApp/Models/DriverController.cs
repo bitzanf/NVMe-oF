@@ -10,6 +10,8 @@ internal partial class DriverController : ViewModels.ObservableBase
 {
     private IDriverControl? _driverControl = null;
 
+    public const string DevicePath = @"\\.\NvmeOfController";
+
     public bool IsConnected => _driverControl != null;
 
     public List<DiskConnectionModel> Connections { get; private set; } = [];
