@@ -6,6 +6,7 @@ namespace ManagementApp.Helpers;
 
 internal class DiskCommandEventHandler(Action<DiskConnectionModel> action) : ICommand
 {
+#pragma warning disable CS0067
     public event EventHandler? CanExecuteChanged;
 
     public bool CanExecute(object? parameter) => true;

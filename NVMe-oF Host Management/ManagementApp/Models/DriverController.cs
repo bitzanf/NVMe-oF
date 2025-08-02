@@ -16,6 +16,22 @@ internal partial class DriverController : ViewModels.ObservableBase
 
     public List<DiskConnectionModel> Connections { get; private set; } = [];
 
+    public string HostNqn
+    {
+        get => _driverControl == null ? string.Empty : _driverControl.HostNqn;
+        set
+        {
+            ThrowIfNotConnected();
+            _driverControl!.HostNqn = value;
+        }
+    }
+
+    public Statistics GetDriverStatistics()
+    {
+        ThrowIfNotConnected();
+        return _driverControl!.GetDriverStatistics();
+    }
+
     public void ConnectToDriver(string devicePath)
     {
         _driverControl = new IoControlAccess(devicePath);
@@ -127,5 +143,10 @@ internal partial class DriverController : ViewModels.ObservableBase
                 }
             }
         ];
+    }
+
+    private void ThrowIfNotConnected()
+    {
+        if (_driverControl == null) throw new InvalidOperationException("The driver is not connected!");
     }
 }

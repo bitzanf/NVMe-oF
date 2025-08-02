@@ -1,6 +1,21 @@
-﻿namespace ManagementApp.ViewModels;
+﻿using KernelInterface;
+
+namespace ManagementApp.ViewModels;
 
 internal class StatsViewModel : ObservableBase
 {
-    public bool IsLoading { get; set; }
+    private Statistics? _statistics;
+
+    public float PacketsPerSecond => GetValueOrDefault().PacketsPerSecond;
+
+    public uint AverageRequestSize => GetValueOrDefault().AverageRequestSize;
+
+    public uint TotalDataTransferred => GetValueOrDefault().TotalDataTransferred;
+
+    public void Reload()
+    {
+        _statistics = App.DriverController.GetDriverStatistics();
+    }
+
+    private Statistics GetValueOrDefault() => _statistics.GetValueOrDefault();
 }

@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Resources;
+using ManagementApp.Dialogs;
 using ManagementApp.Models;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -74,37 +75,39 @@ public sealed partial class MainWindow : Window
         NavigateToTag(firstItem.Tag.ToString()!, new EntranceNavigationTransitionInfo());
 
         Instance = this;
+
+        ContentFrame.Loaded += async (_, _) => await ExceptionToNotificationConverter.WrapExceptionsAsync(InitializeConnection);
     }
 
     public Notification ShowNotification(Notification notification) => NotificationQueue.Show(notification);
 
-    public void InitializeConnection()
+    private async Task InitializeConnection()
     {
         if (App.DriverController.IsConnected) return;
+        var loader = ResourceLoader.GetForViewIndependentUse();
 
-        // TODO: Check kernel connection, possibly ask for service install
         Helpers.DriverServiceHelper service = new();
         if (!service.IsPresent)
         {
-            // TODO: strongly notify the user and possibly exit
-        } else if (!service.IsRunning)
+            // The driver can't be found, so there's no point in using the app
+            await SimpleMessageDialogs.DriverNotInstalled(ContentFrame.XamlRoot);
+            //Application.Current.Exit(); // TODO: remove comment
+        }
+        else if (!service.IsRunning)
         {
-            // TODO: Show a warning dialog that the driver service is not running
-            //  and maybe navigate to Settings (depending on user's choice)
-
-            ContentFrame.Navigate(typeof(SettingsPage));
-            SelectNavItemByType(typeof(SettingsPage));
+            if (await SimpleMessageDialogs.ServiceNotRunning(ContentFrame.XamlRoot))
+                ContentFrame.Navigate(typeof(SettingsPage));
+            // No point in trying to load connection, since the driver is not running...
+            else return;
         }
 
-        // TODO: maybe Task.Run() to not block the UI thread...
-        // ...
         try
         {
             App.DriverController.ConnectToDriver(DriverController.DevicePath);
+            await App.DriverController.LoadConnections();
         }
         catch (Exception ex)
         {
-            var loader = ResourceLoader.GetForViewIndependentUse();
 
             var notification = new Notification
             {
@@ -114,9 +117,6 @@ public sealed partial class MainWindow : Window
             };
             ShowNotification(notification);
         }
-
-        // TODO: Remove ugly hack
-        App.DriverController.LoadConnections();
     }
 
     private void ContentFrame_OnNavigated(object sender, NavigationEventArgs e)
@@ -125,10 +125,15 @@ public sealed partial class MainWindow : Window
         SelectNavItemByType(ContentFrame.SourcePageType);
     }
 
-    private void NavigationViewControl_OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
-    {
-        if (ContentFrame.CanGoBack) ContentFrame.GoBack();
-    }
+    private async void NavigationViewControl_OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
+        => await ExceptionToNotificationConverter.WrapExceptionsAsync(async () =>
+        {
+            if (ContentFrame.CanGoBack)
+            {
+                var approved = await (OnNavigationRequested?.Invoke() ?? Task.FromResult(true));
+                if (approved) ContentFrame.GoBack();
+            }
+        });
 
     private async void NavigationViewControl_OnItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         => await ExceptionToNotificationConverter.WrapExceptionsAsync(async () => {

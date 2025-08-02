@@ -12,13 +12,6 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Controls\AutoPageHeader.xaml" />
-    <None Remove="Views\ConfirmDeleteDialog.xaml" />
-    <None Remove="Views\DiskEditPage.xaml" />
-    <None Remove="Views\StatsPage.xaml" />
-    <None Remove="Views\UnsavedChangesDialog.xaml" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -60,11 +53,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\UnsavedChangesDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
     <Page Update="Views\DiskEditPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -75,7 +63,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\ConfirmDeleteDialog.xaml">
+    <Page Update="Dialogs\ConfirmDeleteDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

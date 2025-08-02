@@ -7,7 +7,7 @@ using KernelInterface.Interop;
 
 namespace KernelInterface
 {
-    public class IoControlAccess : IDriverControl, IDisposable
+    public sealed class IoControlAccess : IDriverControl, IDisposable
     {
         private readonly SafeFileHandle _handle;
 
@@ -63,6 +63,11 @@ namespace KernelInterface
         }
 
         public Task<List<DiskDescriptor>> DiscoveryRequest(NetworkConnection network)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Statistics GetDriverStatistics()
         {
             throw new NotImplementedException();
         }

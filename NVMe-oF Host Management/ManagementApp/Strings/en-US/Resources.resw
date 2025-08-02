@@ -201,11 +201,17 @@
   <data name="ErrorNotification" xml:space="preserve">
     <value>An error occured</value>
   </data>
-  <data name="ExitDiscardChangesDialog.Text" xml:space="preserve">
+  <data name="ConfirmDiscardChanges_Text" xml:space="preserve">
     <value>Really discard changes?</value>
   </data>
   <data name="NoDisksConfigured.Text" xml:space="preserve">
     <value>No disks configured</value>
+  </data>
+  <data name="NoDriverInstalled_Content" xml:space="preserve">
+    <value>This application requires a corresponding NVMe-oF driver installed and will not work without it.</value>
+  </data>
+  <data name="NoDriverInstalled_Title" xml:space="preserve">
+    <value>The NVMe-oF driver is not installed</value>
   </data>
   <data name="QuickConnectDiscovery.Content" xml:space="preserve">
     <value>Connect</value>
@@ -219,6 +225,15 @@
   <data name="SaveDisks.ToolTipService.ToolTip" xml:space="preserve">
     <value>Save changes</value>
   </data>
+  <data name="ServiceNotRunningDialog_Confirm" xml:space="preserve">
+    <value>Go to Settings</value>
+  </data>
+  <data name="ServiceNotRunningDialog_Text" xml:space="preserve">
+    <value>The NVMe-oF service is detected, but not running. The service must be running for the application to work correctly.</value>
+  </data>
+  <data name="ServiceNotRunningDialog_Title" xml:space="preserve">
+    <value>Service is not running</value>
+  </data>
   <data name="StatsNav.Content" xml:space="preserve">
     <value>Statistics</value>
   </data>
@@ -230,5 +245,32 @@
   </data>
   <data name="ValidationError_Nqn" xml:space="preserve">
     <value>Invalid NQN</value>
+  </data>
+  <data name="NoDriverInstalled_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="HostNqnTextBox.Header" xml:space="preserve">
+    <value>Host NQN</value>
+  </data>
+  <data name="ServiceStatusLabel.Text" xml:space="preserve">
+    <value>Service status:</value>
+  </data>
+  <data name="ServiceStatus_Updating" xml:space="preserve">
+    <value>Updating</value>
+  </data>
+  <data name="ServiceStatus_Running" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="ServiceStatus_Stopped" xml:space="preserve">
+    <value>Stopped</value>
+  </data>
+  <data name="NetworkAverageRequestSize.Text" xml:space="preserve">
+    <value>Average request size:</value>
+  </data>
+  <data name="NetworkTotalTransferred.Text" xml:space="preserve">
+    <value>Total data transferred:</value>
+  </data>
+  <data name="NetworkPacketThroughput.Text" xml:space="preserve">
+    <value>Network throughput:</value>
   </data>
 </root>

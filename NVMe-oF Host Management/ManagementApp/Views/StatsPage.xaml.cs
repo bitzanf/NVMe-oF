@@ -1,17 +1,5 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using ManagementApp.Converters;
 using ManagementApp.ViewModels;
 
@@ -27,14 +15,15 @@ public sealed partial class StatsPage : Page
 {
     internal StatsViewModel ViewModel = new();
 
+    public bool IsConnected => App.DriverController.IsConnected;
+
     public StatsPage()
     {
         InitializeComponent();
+        Reload();
     }
 
-    private async void BtnRefresh_OnClick(object sender, RoutedEventArgs e)
-        => await ExceptionToNotificationConverter.WrapExceptionsAsync(async () =>
-        {
-            throw new NotImplementedException();
-        });
+    private void BtnRefresh_OnClick(object sender, RoutedEventArgs e) => Reload();
+
+    private void Reload() => ExceptionToNotificationConverter.WrapExceptions(ViewModel.Reload);
 }

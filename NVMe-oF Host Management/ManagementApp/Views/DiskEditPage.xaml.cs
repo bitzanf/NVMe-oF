@@ -1,3 +1,4 @@
+using CommunityToolkit.WinUI.Behaviors;
 using ManagementApp.Helpers;
 using ManagementApp.ViewModels;
 using Microsoft.UI.Xaml;
@@ -6,8 +7,9 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Resources;
-using CommunityToolkit.WinUI.Behaviors;
+using ManagementApp.Dialogs;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -26,6 +28,9 @@ namespace ManagementApp.Views
         public DiskEditPage()
         {
             InitializeComponent();
+
+            Loaded += (_, _) => MainWindow.Instance!.OnNavigationRequested += RemindUnsavedChanges_IsExitOk;
+            Unloaded += (_, _) => MainWindow.Instance!.OnNavigationRequested -= RemindUnsavedChanges_IsExitOk;
         }
 
         // https://learn.microsoft.com/en-us/windows/apps/design/basics/navigate-between-two-pages
@@ -107,6 +112,12 @@ namespace ManagementApp.Views
                     Message = string.Format(loader.GetString("DiskNotFound_Message"), guid)
                 });
             }
+        }
+
+        private async Task<bool> RemindUnsavedChanges_IsExitOk()
+        {
+            if (!ViewModel.HasChanges) return true;
+            return await SimpleMessageDialogs.UnsavedChanges(XamlRoot);
         }
     }
 }

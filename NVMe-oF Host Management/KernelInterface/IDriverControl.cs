@@ -17,7 +17,6 @@ namespace KernelInterface
 
         Task<List<DiskDescriptor>> DiscoveryRequest(NetworkConnection network);
 
-        // TODO
-        //  GetDriverStatistics()
+        Statistics GetDriverStatistics();
     }
 }

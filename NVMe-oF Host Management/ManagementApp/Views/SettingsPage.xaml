@@ -3,16 +3,93 @@
     x:Class="ManagementApp.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:ManagementApp.Pages"
+    xmlns:local="using:ManagementApp.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:localControls="using:ManagementApp.Controls"
     mc:Ignorable="d">
 
-    <Grid>
-        <localControls:AutoPageHeader Grid.Row="0"
-                                      Grid.Column="0"/>
+    <Grid RowSpacing="24"
+          ColumnSpacing="12">
 
-        <TextBlock>Settings</TextBlock>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <localControls:AutoPageHeader Grid.Row="0"
+                                      Grid.Column="0"
+                                      Grid.ColumnSpan="3"/>
+
+        <TextBox Grid.Row="1"
+                 Grid.Column="0"
+                 x:Uid="HostNqnTextBox"
+                 HorizontalAlignment="Left"
+                 MinWidth="320"
+                 Margin="0,-12,0,0"
+                 Text="{x:Bind ViewModel.Nqn, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+
+        <!-- ReSharper disable once Xaml.StaticResourceNotResolved -->
+        <Button x:Name="BtnSaveNqn"
+                Grid.Row="1"
+                Grid.Column="1"
+                Click="BtnSaveNqn_OnClick"
+                Style="{StaticResource AccentButtonStyle}"
+                VerticalAlignment="Bottom">
+
+            <SymbolIcon Symbol="Save" />
+        </Button>
+
+        <!-- ReSharper disable once Xaml.StaticResourceNotResolved -->
+        <Button x:Name="BtnCancelNqn"
+                Grid.Row="1"
+                Grid.Column="2"
+                Click="BtnCancelNqn_OnClick"
+                Style="{StaticResource AccentButtonStyle}"
+                VerticalAlignment="Bottom">
+
+            <SymbolIcon Symbol="Cancel" />
+        </Button>
+
+        <StackPanel Grid.Row="2"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="3"
+                    Orientation="Horizontal"
+                    Spacing="12">
+
+            <!-- ReSharper disable once Xaml.StaticResourceNotResolved -->
+            <Button x:Name="BtnStartService"
+                    Click="BtnStartService_OnClick"
+                    Style="{StaticResource AccentButtonStyle}">
+
+                Start
+            </Button>
+
+            <!-- ReSharper disable once Xaml.StaticResourceNotResolved -->
+            <Button x:Name="BtnStopService"
+                    Click="BtnStopService_OnClick"
+                    Style="{StaticResource AccentButtonStyle}">
+
+                Stop
+            </Button>
+
+            <Button x:Name="BtnReloadService"
+                    Click="BtnReloadService_OnClick">
+
+                <SymbolIcon Symbol="Refresh" />
+            </Button>
+
+            <TextBlock VerticalAlignment="Center">
+                <Run x:Uid="ServiceStatusLabel" />
+                <Run Text="{x:Bind ViewModel.ServiceStatus, Mode=OneWay}" />
+            </TextBlock>
+        </StackPanel>
     </Grid>
 </Page>

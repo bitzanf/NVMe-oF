@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ManagementApp.Converters;
+using ManagementApp.Dialogs;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -77,8 +78,6 @@ public sealed partial class DiskSetupPage : Page
     private async Task<bool> RemindUnsavedChanges_IsExitOk()
     {
         if (!ViewModel.HasChanges) return true;
-
-        var result = await UnsavedChangesDialog.ShowDialog(XamlRoot);
-        return result == ContentDialogResult.Primary;
+        return await SimpleMessageDialogs.UnsavedChanges(XamlRoot);
     }
 }

@@ -201,11 +201,17 @@
   <data name="ErrorNotification" xml:space="preserve">
     <value>Došlo k chybě</value>
   </data>
-  <data name="ExitDiscardChangesDialog.Text" xml:space="preserve">
+  <data name="ConfirmDiscardChanges_Text" xml:space="preserve">
     <value>Opravdu zahodit změny?</value>
   </data>
   <data name="NoDisksConfigured.Text" xml:space="preserve">
     <value>Žádné nakonfigurované disky</value>
+  </data>
+  <data name="NoDriverInstalled_Content" xml:space="preserve">
+    <value>Tato aplikace vyžaduje nainstalovaný příslušný NVMe-oF ovladač a nebude bez něj fungovat.</value>
+  </data>
+  <data name="NoDriverInstalled_Title" xml:space="preserve">
+    <value>NVMe-oF ovladač není nainstalovaný</value>
   </data>
   <data name="QuickConnectDiscovery.Content" xml:space="preserve">
     <value>Připojit</value>
@@ -219,6 +225,15 @@
   <data name="SaveDisks.ToolTipService.ToolTip" xml:space="preserve">
     <value>Uložit změny</value>
   </data>
+  <data name="ServiceNotRunningDialog_Confirm" xml:space="preserve">
+    <value>Přejít do Nastavení</value>
+  </data>
+  <data name="ServiceNotRunningDialog_Text" xml:space="preserve">
+    <value>Služba NVMe-oF byla nalezena, ale není spuštěna. Pro správné fungování aplikace musí služba běžet.</value>
+  </data>
+  <data name="ServiceNotRunningDialog_Title" xml:space="preserve">
+    <value>Služba není spuštěna</value>
+  </data>
   <data name="StatsNav.Content" xml:space="preserve">
     <value>Statistiky</value>
   </data>
@@ -230,5 +245,32 @@
   </data>
   <data name="ValidationError_Nqn" xml:space="preserve">
     <value>Neplatné NQN</value>
+  </data>
+  <data name="NoDriverInstalled_Close" xml:space="preserve">
+    <value>Zavřít</value>
+  </data>
+  <data name="HostNqnTextBox.Header" xml:space="preserve">
+    <value>Hostitelské NQN</value>
+  </data>
+  <data name="ServiceStatusLabel.Text" xml:space="preserve">
+    <value>Stav služby:</value>
+  </data>
+  <data name="ServiceStatus_Updating" xml:space="preserve">
+    <value>Aktualizace...</value>
+  </data>
+  <data name="ServiceStatus_Running" xml:space="preserve">
+    <value>Běží</value>
+  </data>
+  <data name="ServiceStatus_Stopped" xml:space="preserve">
+    <value>Zastavena</value>
+  </data>
+  <data name="NetworkAverageRequestSize.Text" xml:space="preserve">
+    <value>Průměrná velikost požadavku:</value>
+  </data>
+  <data name="NetworkTotalTransferred.Text" xml:space="preserve">
+    <value>Celkem přeneseno dat:</value>
+  </data>
+  <data name="NetworkPacketThroughput.Text" xml:space="preserve">
+    <value>Propustnost sítě:</value>
   </data>
 </root>

@@ -32,7 +32,6 @@ namespace ManagementApp
         {
             _window = new MainWindow();
             _window.Activate();
-            _window.InitializeConnection();
         }
     }
 }

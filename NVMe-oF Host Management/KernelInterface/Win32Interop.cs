@@ -190,9 +190,8 @@ namespace KernelInterface.Interop
 
             if (dwChars == 0)
             {
-                // TODO Handle the error.
                 int le = Marshal.GetLastWin32Error();
-                return null;
+                throw new SystemException($"Unable to format error message (formatting error {le:X}).");
             }
 
             string sRet = Marshal.PtrToStringUni(lpMsgBuf, (int) dwChars);

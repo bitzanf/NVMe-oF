@@ -16,7 +16,7 @@ internal partial class DiskEditViewModel(DiskConnectionModel? diskConnection) : 
     public bool HasChanges
     {
         get => _hasChanges;
-        set => SetField( ref _hasChanges, value);
+        set => SetField(ref _hasChanges, value);
     }
 
     public string Nqn

@@ -20,7 +20,7 @@
                 Spacing="12">
         <localControls:AutoPageHeader x:Uid="DiskEditPageHeader" />
 
-        <TextBlock Visibility="{x:Bind ShowInfo, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+        <TextBlock Visibility="{x:Bind ShowInfo, Converter={StaticResource BoolToVisibilityConverter}}"
                    FontSize="20">
             <Run>{</Run><Run Text="{x:Bind ViewModel.Guid}" /><Run>}</Run>
             <Run Foreground="LightGray"> @ </Run>
