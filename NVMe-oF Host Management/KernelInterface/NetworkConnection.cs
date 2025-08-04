@@ -12,14 +12,14 @@ namespace KernelInterface
         public NetworkConnection Clone() => (NetworkConnection)MemberwiseClone();
     }
 
-    public enum TransportType
+    public enum TransportType : int
     {
         Tcp,
         Rdma
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public enum AddressFamily
+    public enum AddressFamily : int
     {
         IPv4,
         IPv6

@@ -14,6 +14,7 @@ namespace KernelInterface
         void ModifyConnection(DiskDescriptor newDescriptor);
 
         ConnectionStatus GetConnectionStatus(Guid connectionId);
+        DiskDescriptor GetConnection(Guid connectionId);
 
         Task<List<DiskDescriptor>> DiscoveryRequest(NetworkConnection network);
 

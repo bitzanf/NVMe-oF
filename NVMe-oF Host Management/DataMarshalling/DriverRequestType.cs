@@ -1,6 +1,6 @@
-﻿namespace KernelInterface
+﻿namespace DataMarshalling
 {
-    public enum DriverRequestType : int
+    public enum DriverRequestType
     {
         None = 0,
 
@@ -13,7 +13,6 @@
         ModifyConnection,
 
         GetConnectionStatus,
-        GetConnection,
 
         DiscoveryRequest,
 
