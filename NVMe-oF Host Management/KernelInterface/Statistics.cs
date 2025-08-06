@@ -4,6 +4,6 @@
     {
         public float PacketsPerSecond { get; set; }
         public uint AverageRequestSize { get; set; }
-        public uint TotalDataTransferred { get; set; }
+        public ulong TotalDataTransferred { get; set; }
     }
 }

@@ -10,7 +10,7 @@ internal class StatsViewModel : ObservableBase
 
     public uint AverageRequestSize => GetValueOrDefault().AverageRequestSize;
 
-    public uint TotalDataTransferred => GetValueOrDefault().TotalDataTransferred;
+    public ulong TotalDataTransferred => GetValueOrDefault().TotalDataTransferred;
 
     public void Reload()
     {

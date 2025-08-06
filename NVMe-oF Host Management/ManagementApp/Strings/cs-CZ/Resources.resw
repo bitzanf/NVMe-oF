@@ -273,4 +273,10 @@
   <data name="NetworkPacketThroughput.Text" xml:space="preserve">
     <value>Propustnost sítě:</value>
   </data>
+  <data name="UsedPSNotification_Title" xml:space="preserve">
+    <value>Přístup zamítnut</value>
+  </data>
+  <data name="UsedPSNotification_Message" xml:space="preserve">
+    <value>Používám PowerShell na dokončení požadavku...</value>
+  </data>
 </root>

@@ -16,7 +16,34 @@ namespace KernelInterface
         // http://www.ioctls.net/
         private const uint IoctlMiniPortProcessServiceIrp = 0x4d038;
 
-        public string HostNqn { get; set; }
+        public string HostNqn
+        {
+            get
+            {
+                int sizeExpected = 0;
+                RequestWrapper(
+                    sizeof(int),
+                    MarshalRequest.GetHostNqnSize,
+                    bytes => sizeExpected = BitConverter.ToInt32(bytes, 0)
+                );
+
+                CheckResponseLength(sizeof(int), sizeExpected, nameof(MarshalRequest.GetHostNqnSize));
+
+                string nqn = string.Empty;
+                RequestWrapper(
+                    sizeExpected,
+                    MarshalRequest.GetHostNqn,
+                    bytes => nqn = MarshalResponse.GetHostNqn(bytes)
+                );
+
+                return nqn;
+            }
+            set => RequestWrapper(
+                    0,
+                    () => MarshalRequest.SetHostNqn(value),
+                    null
+                );
+        }
 
         public IoControlAccess(string devicePath)
         {
@@ -42,7 +69,23 @@ namespace KernelInterface
         
         public List<DiskDescriptor> GetConfiguredConnections()
         {
-            throw new NotImplementedException();
+            int sizeExpected = 0;
+            RequestWrapper(
+                sizeof(int),
+                MarshalRequest.GetAllConnectionsSize,
+                bytes => sizeExpected = BitConverter.ToInt32(bytes, 0)
+            );
+
+            CheckResponseLength(sizeof(int), sizeExpected, nameof(MarshalRequest.GetAllConnectionsSize));
+
+            List<DiskDescriptor> connections = null;
+            RequestWrapper(
+                sizeExpected,
+                MarshalRequest.GetAllConnections,
+                bytes => connections = MarshalResponse.GetAllConnections(bytes)
+            );
+
+            return connections;
         }
 
         public Guid AddConnection(DiskDescriptor descriptor)
@@ -63,9 +106,7 @@ namespace KernelInterface
             RequestWrapper(0, () => MarshalRequest.RemoveConnection(connectionId), null);
 
         public void ModifyConnection(DiskDescriptor newDescriptor)
-        {
-            throw new NotImplementedException();
-        }
+            => RequestWrapper(0, () => MarshalRequest.ModifyConnection(newDescriptor), null);
 
         public ConnectionStatus GetConnectionStatus(Guid connectionId)
         {
@@ -77,7 +118,8 @@ namespace KernelInterface
                 () => MarshalRequest.GetConnectionStatus(connectionId),
                 bytes =>
                 {
-                    if (bytes.Length != sizeExpected) throw new Exception("GetConnectionStatus returned incorrect response length!");
+                    CheckResponseLength(sizeExpected, bytes.Length, nameof(MarshalRequest.GetConnectionStatus));
+
                     var iStatus = BitConverter.ToInt32(bytes, 0);
                     status = (ConnectionStatus)iStatus;
                 }
@@ -88,17 +130,69 @@ namespace KernelInterface
 
         public DiskDescriptor GetConnection(Guid connectionId)
         {
-            throw new NotImplementedException();
+            int sizeExpected = 0;
+            RequestWrapper(
+                sizeof(int),
+                () => MarshalRequest.GetConnectionSize(connectionId),
+                bytes => sizeExpected = BitConverter.ToInt32(bytes, 0)
+            );
+
+            if (sizeExpected == 0) throw new Exception($"No connection found for {connectionId:B}!");
+
+            DiskDescriptor descriptor = null;
+            RequestWrapper(
+                sizeExpected,
+                () => MarshalRequest.GetConnection(connectionId),
+                bytes => descriptor = MarshalResponse.GetConnection(bytes)
+            );
+
+            return descriptor;
         }
 
-        public Task<List<DiskDescriptor>> DiscoveryRequest(NetworkConnection network)
+        public Task<List<DiskDescriptor>> DiscoveryRequest(NetworkConnection network) => Task.Run(() =>
         {
-            throw new NotImplementedException();
-        }
+            RequestWrapper(
+                0,
+                () => MarshalRequest.DiscoveryRequest(network),
+                null
+            );
+
+            int sizeExpected = 0;
+            RequestWrapper(
+                sizeof(int),
+                MarshalRequest.GetDiscoveryResponseSize,
+                bytes => sizeExpected = BitConverter.ToInt32(bytes, 0)
+            );
+
+            CheckResponseLength(sizeof(int), sizeExpected, nameof(MarshalRequest.GetDiscoveryResponseSize));
+
+            List<DiskDescriptor> connections = null;
+            RequestWrapper(
+                sizeExpected,
+                MarshalRequest.GetDiscoveryResponse,
+                bytes => connections = MarshalResponse.GetDiscoveryResponse(bytes)
+            );
+
+            return connections;
+        });
 
         public Statistics GetDriverStatistics()
         {
-            throw new NotImplementedException();
+            int sizeExpected = Marshal.SizeOf<Statistics>();
+            var statistics = new Statistics();
+
+            RequestWrapper(
+                sizeExpected,
+                MarshalRequest.GetDriverStatistics,
+                bytes =>
+                {
+                    CheckResponseLength(sizeExpected, bytes.Length, nameof(MarshalRequest.GetDriverStatistics));
+
+                    statistics = MarshalResponse.GetDriverStatistics(bytes);
+                }
+            );
+
+            return statistics;
         }
 
         private void Ioctl(
@@ -171,6 +265,13 @@ namespace KernelInterface
                 
                 request?.Dispose();
             }
+        }
+
+        private static void CheckResponseLength(int expected, int actual, string requestName)
+        {
+            if (expected != actual) throw new Exception(
+                    $"{requestName} returned incorrect response length (expected {expected}, was {actual})!"
+                );
         }
     }
 }

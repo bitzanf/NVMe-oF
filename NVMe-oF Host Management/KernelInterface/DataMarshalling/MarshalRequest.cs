@@ -31,6 +31,46 @@ namespace KernelInterface.DataMarshalling
         public static MemoryStream GetDriverStatistics()
             => StreamWrapper(DriverRequestType.GetStatistics, null);
 
+        public static MemoryStream ModifyConnection(DiskDescriptor descriptor)
+            => StreamWrapper(DriverRequestType.ModifyConnection, writer =>
+            {
+                if (descriptor.Guid == Guid.Empty) throw new InvalidOperationException("Modified Guid must be set!");
+
+                Write(writer, descriptor.Guid);
+                Write(writer, descriptor);
+            });
+
+        public static MemoryStream GetConnectionSize(Guid connectionId)
+            => StreamWrapper(DriverRequestType.GetConnectionSize, writer => Write(writer, connectionId));
+
+        public static MemoryStream GetConnection(Guid connectionId)
+            => StreamWrapper(DriverRequestType.GetConnection, writer => Write(writer, connectionId));
+
+        public static MemoryStream GetAllConnectionsSize()
+            => StreamWrapper(DriverRequestType.GetAllConnectionsSize, null);
+
+        public static MemoryStream GetAllConnections()
+            => StreamWrapper(DriverRequestType.GetAllConnections, null);
+
+        public static MemoryStream DiscoveryRequest(NetworkConnection network)
+            => StreamWrapper(DriverRequestType.DiscoveryRequest, writer => Write(writer, network));
+
+        public static MemoryStream GetDiscoveryResponseSize()
+            => StreamWrapper(DriverRequestType.GetDiscoveryResponseSize, null);
+
+        public static MemoryStream GetDiscoveryResponse()
+            => StreamWrapper(DriverRequestType.GetDiscoveryResponse, null);
+
+        public static MemoryStream GetHostNqn()
+            => StreamWrapper(DriverRequestType.GetHostNqn, null);
+
+        public static MemoryStream GetHostNqnSize()
+            => StreamWrapper(DriverRequestType.GetHostNqnSize, null);
+
+        public static MemoryStream SetHostNqn(string nqn)
+            => StreamWrapper(DriverRequestType.SetHostNqn, writer => writer.Write(nqn));
+
+
         /// <summary>
         /// Writes the request ID and calls the actual writing callback
         /// </summary>
@@ -44,7 +84,7 @@ namespace KernelInterface.DataMarshalling
 
             try
             {
-                writer = new BinaryWriter(stream, Encoding.Unicode);
+                writer = new BinaryWriter(stream, Encoding.Unicode, true);
                 
                 writer.Write((int)request);
                 callback?.Invoke(writer);

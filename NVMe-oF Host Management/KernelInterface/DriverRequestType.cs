@@ -1,13 +1,13 @@
 ﻿namespace KernelInterface
 {
-    public enum DriverRequestType : int
+    internal enum DriverRequestType : int
     {
         None = 0,
 
         GetHostNqn,
         SetHostNqn,
 
-        GetConnections,
+        GetAllConnections,
         AddConnection,
         RemoveConnection,
         ModifyConnection,
@@ -16,7 +16,13 @@
         GetConnection,
 
         DiscoveryRequest,
+        GetDiscoveryResponse,
 
-        GetStatistics
+        GetStatistics,
+
+        GetHostNqnSize,
+        GetConnectionSize,
+        GetAllConnectionsSize,
+        GetDiscoveryResponseSize
     }
 }

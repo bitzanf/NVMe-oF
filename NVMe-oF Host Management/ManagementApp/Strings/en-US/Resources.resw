@@ -273,4 +273,10 @@
   <data name="NetworkPacketThroughput.Text" xml:space="preserve">
     <value>Network throughput:</value>
   </data>
+  <data name="UsedPSNotification_Title" xml:space="preserve">
+    <value>Access denied</value>
+  </data>
+  <data name="UsedPSNotification_Message" xml:space="preserve">
+    <value>Using PowerShell to complete request...</value>
+  </data>
 </root>

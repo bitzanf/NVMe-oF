@@ -18,7 +18,7 @@ internal partial class DriverController : ViewModels.ObservableBase
 
     public string HostNqn
     {
-        get => _driverControl == null ? string.Empty : _driverControl.HostNqn;
+        get => _driverControl?.HostNqn ?? string.Empty;
         set
         {
             ThrowIfNotConnected();
