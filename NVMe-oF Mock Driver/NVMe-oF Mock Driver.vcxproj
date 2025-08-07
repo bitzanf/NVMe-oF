@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="vcrtl_driver.props" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -117,7 +116,15 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DataAcquisition.cpp" />
     <ClCompile Include="Driver.cpp" />
+    <ClCompile Include="RequestHandling.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DataAcquisition.hpp" />
+    <ClInclude Include="DriverRequestType.hpp" />
+    <ClInclude Include="RequestHandling.hpp" />
+    <ClInclude Include="Types.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

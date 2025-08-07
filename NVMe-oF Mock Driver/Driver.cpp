@@ -1,9 +1,10 @@
 #include <ntddk.h>
 #include <wdf.h>
+#include <ntddscsi.h>
 
-#define DRIVER_LOG_STR "Mock NVMe-oF Driver: "
+#include "RequestHandling.hpp"
 
-const UNICODE_STRING DeviceSymlink = RTL_CONSTANT_STRING(L"\\??\\NvmeOfController");
+constexpr UNICODE_STRING DeviceSymlink = RTL_CONSTANT_STRING(L"\\??\\NvmeOfController");
 
 extern "C" DRIVER_INITIALIZE DriverEntry;
 
@@ -27,7 +28,7 @@ bool CheckStatus(NTSTATUS status) {
     return true;
 }
 
-NTSTATUS DriverEntry(PDRIVER_OBJECT driverObject,PUNICODE_STRING registryPath) {
+NTSTATUS DriverEntry(PDRIVER_OBJECT driverObject, PUNICODE_STRING registryPath) {
     KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "DriverEntry\n"));
 
     WDF_DRIVER_CONFIG config;
@@ -96,14 +97,60 @@ namespace NvmeOFMockDriver {
         UNREFERENCED_PARAMETER(driver);
     }
 
+    NTSTATUS IoCtlInner(WDFDEVICE device, WDFREQUEST request, size_t outputBufferSize, size_t inputBufferSize, size_t& written) {
+        if (inputBufferSize < sizeof(int)) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request too small!\n"));
+            return STATUS_UNSUCCESSFUL;
+        }
+
+        WDFMEMORY inputMemory;
+        if (!CheckStatus(WdfRequestRetrieveInputMemory(request, &inputMemory))) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Failed to retrieve input memory!\n"));
+            return STATUS_UNSUCCESSFUL;
+        }
+
+        size_t bufferSize;
+        void* inputBuffer = WdfMemoryGetBuffer(inputMemory, &bufferSize);
+
+        if (bufferSize != inputBufferSize) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "WDF size (%llu B) != buffer size (%llu B)\n", inputBufferSize, bufferSize));
+            return STATUS_UNSUCCESSFUL;
+        }
+
+        int driverRequest;
+        memcpy(&driverRequest, inputBuffer, sizeof(driverRequest));
+
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "Received application request %d\n", driverRequest));
+
+        auto status = HandleApplicationRequest(
+            device,
+            request,
+            static_cast<DriverRequestType>(driverRequest),
+            {
+                .Data = static_cast<BYTE*>(inputBuffer) + sizeof(int),
+                .Length =inputBufferSize - sizeof(int)
+            },
+            outputBufferSize,
+            written
+        );
+
+        CheckStatus(status);
+        return status;
+    }
+
+    // bp NVMe_oF_MockDriver!NvmeOFMockDriver::EvtIoQueueIoCtl
+
     void EvtIoQueueIoCtl(WDFQUEUE queue, WDFREQUEST request, size_t outputBufferSize, size_t inputBufferSize, ULONG ioControlCode) {
-        UNREFERENCED_PARAMETER(queue);
-        UNREFERENCED_PARAMETER(request);
-        UNREFERENCED_PARAMETER(outputBufferSize);
-        UNREFERENCED_PARAMETER(inputBufferSize);
+        if (ioControlCode != IOCTL_MINIPORT_PROCESS_SERVICE_IRP) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_WARNING_LEVEL, DRIVER_LOG_STR "Unknown IO Control request, exiting... (0x%x)\n", ioControlCode));
+            WdfRequestComplete(request, STATUS_UNSUCCESSFUL);
+            return;
+        }
 
-        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "IO Control Request: 0x%x\n", ioControlCode));
+        auto device = WdfIoQueueGetDevice(queue);
 
-        WdfRequestComplete(request, STATUS_SUCCESS);
+        size_t written = 0;
+        auto result = IoCtlInner(device, request, outputBufferSize, inputBufferSize, written);
+        WdfRequestCompleteWithInformation(request, result, written);
     }
 }

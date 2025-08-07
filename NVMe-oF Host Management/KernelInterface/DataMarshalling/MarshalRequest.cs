@@ -110,7 +110,7 @@ namespace KernelInterface.DataMarshalling
             writer.Write((int)network.TransportType);
             writer.Write((int)network.AddressFamily);
             writer.Write(network.TransportServiceId);
-            writer.Write(network.TransportAddress);
+            writer.Write(network.TransportAddress ?? string.Empty);
         }
 
         /// <summary>

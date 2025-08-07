@@ -55,18 +55,12 @@
             </TextBlock>
 
             <TextBlock Grid.Row="1"
-                       Grid.Column="1">
-
-                <Run Text="{x:Bind ViewModel.AverageRequestSize}" />
-                <Run>B</Run>
-            </TextBlock>
+                       Grid.Column="1"
+                       Text="{x:Bind AutoScale(ViewModel.AverageRequestSize, x:True)}" />
 
             <TextBlock Grid.Row="2"
-                       Grid.Column="1">
-
-                <Run Text="{x:Bind ViewModel.TotalDataTransferred}" />
-                <Run>B</Run>
-            </TextBlock>
+                       Grid.Column="1"
+                       Text="{x:Bind AutoScale(ViewModel.TotalDataTransferred, x:True)}" />
         </Grid>
     </StackPanel>
 </Page>
