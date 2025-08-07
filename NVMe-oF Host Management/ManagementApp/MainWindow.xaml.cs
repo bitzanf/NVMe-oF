@@ -91,7 +91,7 @@ public sealed partial class MainWindow : Window
         {
             // The driver can't be found, so there's no point in using the app
             await SimpleMessageDialogs.DriverNotInstalled(ContentFrame.XamlRoot);
-            //Application.Current.Exit(); // TODO: remove comment
+            Application.Current.Exit();
         }
         else if (!service.IsRunning)
         {
@@ -104,11 +104,9 @@ public sealed partial class MainWindow : Window
         try
         {
             App.DriverController.ConnectToDriver(DriverController.DevicePath);
-            await App.DriverController.LoadConnections();
         }
         catch (Exception ex)
         {
-
             var notification = new Notification
             {
                 Title = loader.GetString("DriverConnectionError_Title"),
@@ -116,7 +114,10 @@ public sealed partial class MainWindow : Window
                 Severity = InfoBarSeverity.Error
             };
             ShowNotification(notification);
+            return;
         }
+        
+        await App.DriverController.LoadConnections();
     }
 
     private void ContentFrame_OnNavigated(object sender, NavigationEventArgs e)

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace KernelInterface
 {
-    public interface IDriverControl
+    public interface IDriverControl : IDisposable
     {
         string HostNqn { get; set; }
 

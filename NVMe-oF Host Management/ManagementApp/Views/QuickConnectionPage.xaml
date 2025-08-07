@@ -14,10 +14,12 @@
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:model="using:ManagementApp.Models"
     xmlns:localConverters="using:ManagementApp.Converters"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     mc:Ignorable="d">
 
     <Page.Resources>
         <localConverters:StringToUpperConverter x:Key="StringToUpperConverter" />
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
     </Page.Resources>
 
     <Grid RowSpacing="24"
@@ -73,7 +75,8 @@
                 x:Uid="QuickConnectDiscovery"
                 Click="BtnConnect_OnClick"
                 VerticalAlignment="Bottom"
-                Style="{StaticResource AccentButtonStyle}" />
+                Style="{StaticResource AccentButtonStyle}"
+                IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"/>
 
         <ItemsControl ItemsSource="{x:Bind ViewModel.Connections}"
               Grid.Row="3"

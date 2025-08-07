@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Resources;
+using ManagementApp.Converters;
 using ManagementApp.Dialogs;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -51,16 +52,17 @@ namespace ManagementApp.Views
             base.OnNavigatedTo(e);
         }
 
-        private void BtnSave_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (!Validate()) return;
+        private async void BtnSave_OnClick(object sender, RoutedEventArgs e)
+            => await ExceptionToNotificationConverter.WrapExceptionsAsync(async () =>
+            {
+                if (!Validate()) return;
 
-            App.DriverController.IntegrateChanges(ViewModel.Model);
-            NotificationHelper.ShowChangeSaveStatus(App.DriverController.CommitChanges());
+                bool success = await App.DriverController.IntegrateChanges(ViewModel.Model);
+                NotificationHelper.ShowChangeSaveStatus(success);
 
-            // We've edited and saved the disk, return to previous page (likely DiskSetupPage)
-            Frame.GoBack();
-        }
+                // We've edited and saved the disk, return to previous page (likely DiskSetupPage)
+                Frame.GoBack();
+            });
 
         private void BtnCancel_OnClick(object sender, RoutedEventArgs e)
         {
@@ -97,7 +99,7 @@ namespace ManagementApp.Views
 
         private void LoadViewModel(Guid guid)
         {
-            var model = App.DriverController.Connections.FirstOrDefault(disk => disk.Descriptor.Guid.Equals(guid));
+            var model = App.DriverController.TryGetModel(guid);
             ViewModel = new(model?.Clone());
 
             if (model == null && guid != Guid.Empty)

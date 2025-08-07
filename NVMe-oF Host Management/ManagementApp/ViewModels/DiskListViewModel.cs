@@ -18,8 +18,11 @@ internal partial class DiskListViewModel : ObservableBase
         {
             SetField(ref _isLoading, value);
             OnPropertyChanged(nameof(KnownNoDisks));
+            OnPropertyChanged(nameof(CanRefresh));
         }
     }
+
+    public bool CanRefresh => !IsLoading && App.DriverController.IsConnected;
 
     public bool HasChanges
     {

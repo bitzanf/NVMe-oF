@@ -17,7 +17,6 @@
     <Page.Resources>
         <localConverters:StringToUpperConverter x:Key="StringToUpperConverter" />
         <localConverters:ConnectionStatusToIconConverter x:Key="ConnectionStatusToIconConverter" />
-        <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
@@ -43,7 +42,7 @@
                 Grid.Column="0"
                 Grid.Row="1" 
                 Click="BtnRefresh_OnClick"
-                IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" >
+                IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}" >
             <SymbolIcon Symbol="Refresh" />
         </Button>
 

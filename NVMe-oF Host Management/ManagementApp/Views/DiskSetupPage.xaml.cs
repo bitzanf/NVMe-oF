@@ -4,7 +4,6 @@ using ManagementApp.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ManagementApp.Converters;
@@ -42,13 +41,14 @@ public sealed partial class DiskSetupPage : Page
             if (discard) await ViewModel.ForceReload();
         });
 
-    private void BtnSave_OnClick(object sender, RoutedEventArgs e)
-    {
-        App.DriverController.IntegrateChanges(ViewModel.Connections.ToList());
-        ViewModel.HasChanges = false;
+    private async void BtnSave_OnClick(object sender, RoutedEventArgs e)
+        => await ExceptionToNotificationConverter.WrapExceptionsAsync(async () =>
+        {
+            bool success = await App.DriverController.IntegrateChanges(ViewModel.Connections);
+            ViewModel.HasChanges = false;
 
-        NotificationHelper.ShowChangeSaveStatus(App.DriverController.CommitChanges());
-    }
+            NotificationHelper.ShowChangeSaveStatus(success);
+        });
 
     private async void BtnCancel_OnClick(object sender, RoutedEventArgs e)
         => await ExceptionToNotificationConverter.WrapExceptionsAsync(ViewModel.LoadConnections);
@@ -71,9 +71,7 @@ public sealed partial class DiskSetupPage : Page
         });
 
     private void BtnAdd_OnClick(object sender, RoutedEventArgs e)
-    {
-        Frame.Navigate(typeof(DiskEditPage), null, new EntranceNavigationTransitionInfo());
-    }
+        => Frame.Navigate(typeof(DiskEditPage), null, new EntranceNavigationTransitionInfo());
 
     private async Task<bool> RemindUnsavedChanges_IsExitOk()
     {

@@ -17,7 +17,6 @@
 
     <Page.Resources>
         <localConverters:ConnectionStatusToIconConverter x:Key="ConnectionStatusToIconConverter" />
-        <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
@@ -45,7 +44,7 @@
             <Button x:Name="BtnRefresh"
                     x:Uid="RefreshDisks"
                     Click="BtnRefresh_OnClick"
-                    IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" >
+                    IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}">
 
                 <SymbolIcon Symbol="Refresh" />
             </Button>
@@ -53,7 +52,8 @@
             <Button x:Name="BtnAdd"
                     x:Uid="AddNewDisk"
                     Click="BtnAdd_OnClick"
-                    Margin="0,0,12,0">
+                    Margin="0,0,12,0"
+                    IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}">
 
                 <SymbolIcon Symbol="Add" />
             </Button>

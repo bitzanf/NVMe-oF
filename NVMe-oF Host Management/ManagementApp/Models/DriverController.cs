@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KernelInterface;
+using ManagementApp.Helpers;
 
 namespace ManagementApp.Models;
 
-internal partial class DriverController : ViewModels.ObservableBase
+internal partial class DriverController : ViewModels.ObservableBase, IDisposable
 {
-    private IDriverControl? _driverControl = null;
+    private IoControlAccess? _driverControl;
 
     public const string DevicePath = @"\\.\NvmeOfController";
 
     public bool IsConnected => _driverControl != null;
 
-    public List<DiskConnectionModel> Connections { get; private set; } = [];
+    private ChangeTrackingCollection<Guid, DiskConnectionModel> _connections = [];
+
+    public IEnumerable<DiskConnectionModel> Connections => _connections.Values;
 
     public string HostNqn
     {
@@ -25,6 +28,8 @@ internal partial class DriverController : ViewModels.ObservableBase
             _driverControl!.HostNqn = value;
         }
     }
+
+    public DiskConnectionModel? TryGetModel(Guid guid) => _connections.GetValueOrDefault(guid);
 
     public Statistics GetDriverStatistics()
     {
@@ -40,6 +45,7 @@ internal partial class DriverController : ViewModels.ObservableBase
 
     public void DisconnectFromDriver()
     {
+        _driverControl?.Dispose();
         _driverControl = null;
         OnPropertyChanged(nameof(IsConnected));
     }
@@ -47,102 +53,77 @@ internal partial class DriverController : ViewModels.ObservableBase
     public Task LoadConnections() => Task.Run(() =>
     {
         if (_driverControl == null)
-        {
-            // TODO: Remove ugly hack
-            //Connections.Clear();
-            LoadConnectionsInternal();
-            return;
-        }
+            _connections.Clear();
+        else
+            lock (_driverControl) LoadConnectionsInternal();
 
-        lock (_driverControl) LoadConnectionsInternal();
+        OnPropertyChanged(nameof(Connections));
     });
 
-    public bool CommitChanges()
+    private bool CommitChanges()
     {
-        // TODO: is this the best API choice?
-        //  the process is *always* Integrate(); Commit();
-
         if (_driverControl == null) return false;
 
         lock (_driverControl)
         {
-            var connections = Connections;
-            LoadConnectionsInternal();
+            var changes = _connections.Commit();
+
+            foreach (var removed in changes.Removed) _driverControl.RemoveConnection(removed);
+            foreach (var modified in changes.Modified) _driverControl.ModifyConnection(_connections[modified].Descriptor);
+            foreach (var added in changes.Added) _driverControl.AddConnection(_connections[added].Descriptor);
         }
 
         return true;
     }
 
-    public void IntegrateChanges(IReadOnlyList<DiskConnectionModel> connections)
+    public Task<bool> IntegrateChanges(IReadOnlyList<DiskConnectionModel> connections)
+        => RunTransaction(() =>
+        {
+            foreach (var connection in connections)
+                _connections.Add(connection.Descriptor.Guid, connection);
+        });
+
+    public Task<bool> IntegrateChanges(DiskConnectionModel connection)
+        => RunTransaction(() => _connections.Add(connection.Descriptor.Guid, connection));
+
+    public Task<bool> Remove(Guid connectionId)
+        => RunTransaction(() => _connections.Remove(connectionId));
+
+    public void Dispose() => DisconnectFromDriver();
+
+    public async Task<List<DiskConnectionModel>> PerformDiscovery(NetworkConnection discoveryController)
     {
-        // TODO: is this a good idea...?
-        Connections = connections.ToList();
+        ThrowIfNotConnected();
+        var discovered = await _driverControl!.DiscoveryRequest(discoveryController);
+
+        return discovered.Select(disk => new DiskConnectionModel { Descriptor = disk }).ToList();
     }
 
-    public void IntegrateChanges(DiskConnectionModel connection)
-    {
-        // TODO: probably some kind of audit log for easier kernel commits...
-        //  Also detect changes vs newly configured connections...
-        Connections.Add(connection);
-    }
+    private Task<bool> RunTransaction(Action callback)
+        => Task.Run(() =>
+        {
+            if (_driverControl == null) return false;
+
+            lock (_driverControl)
+            {
+                callback();
+                var success = CommitChanges();
+                OnPropertyChanged(nameof(Connections));
+                return success;
+            }
+        });
 
     private void LoadConnectionsInternal()
     {
-        // TODO: Actually ask the driver for connections...
-        Connections =
-        [
-            new()
-            {
-                ConnectionStatus = ConnectionStatus.Connected,
-                Descriptor = new()
-                {
-                    Nqn = "zfs-netdisk",
-                    NetworkConnection = new()
-                    {
-                        TransportAddress = "10.1.0.50",
-                        TransportServiceId = 4420,
-                        AddressFamily = AddressFamily.IPv4,
-                        TransportType = TransportType.Tcp,
-                    },
-                    NtObjectPath = @"\Disks\VirtualDisk0",
-                    Guid = Guid.NewGuid()
-                }
-            },
-            new()
-            {
-                ConnectionStatus = ConnectionStatus.Disconnected,
-                Descriptor = new()
-                {
-                    Nqn = "nqn.2014-08.org.meow.disks",
-                    NetworkConnection = new()
-                    {
-                        TransportAddress = "fe80::c2b3:ea32:35e1:c4d6%22",
-                        TransportServiceId = 12345,
-                        AddressFamily = AddressFamily.IPv6,
-                        TransportType = TransportType.Rdma,
-                    },
-                    NtObjectPath = @"\Disks\VirtualDisk1",
-                    Guid = Guid.NewGuid()
-                }
-            },
-            new()
-            {
-                ConnectionStatus = ConnectionStatus.Connecting,
-                Descriptor = new()
-                {
-                    Nqn = "nqn.2014-08.org.nvmexpress.discovery",
-                    NetworkConnection = new()
-                    {
-                        TransportAddress = "75.209.63.155",
-                        TransportServiceId = 4420,
-                        AddressFamily = AddressFamily.IPv4,
-                        TransportType = TransportType.Tcp,
-                    },
-                    NtObjectPath = @"\Disks\VirtualDisk2",
-                    Guid = Guid.NewGuid()
-                }
-            }
-        ];
+        var connections = _driverControl!.GetConfiguredConnections();
+
+        var models = connections.Select(d => new DiskConnectionModel
+        {
+            Descriptor = d,
+            ConnectionStatus = _driverControl!.GetConnectionStatus(d.Guid)
+        });
+
+        _connections = new (models.Select(m => new KeyValuePair<Guid, DiskConnectionModel>(m.Descriptor.Guid, m)));
     }
 
     private void ThrowIfNotConnected()

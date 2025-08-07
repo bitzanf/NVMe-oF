@@ -3,7 +3,6 @@ using ManagementApp.Models;
 using ManagementApp.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System;
 using System.Windows.Input;
 using ManagementApp.Helpers;
 
@@ -21,23 +20,27 @@ public sealed partial class QuickConnectionPage : Page
 
     public ICommand ConnectCommand => new DiskCommandEventHandler(QuickConnectCommandCallback);
 
-    public QuickConnectionPage()
-    {
-        InitializeComponent();
-    }
+    public QuickConnectionPage() => InitializeComponent();
 
     private async void BtnConnect_OnClick(object sender, RoutedEventArgs e)
         => await ExceptionToNotificationConverter.WrapExceptionsAsync(async () =>
         {
-            // TODO: pass network info to driver controller for service discovery
-            
-            ViewModel.Connections.Add(App.DriverController.Connections[1]);
+            if (ViewModel.IsLoading) return;
+
+            ViewModel.IsLoading = true;
+            var discovered = await App.DriverController.PerformDiscovery(ViewModel.DiscoveryController);
+            foreach (var model in discovered) ViewModel.Connections.Add(model);
+            ViewModel.IsLoading = false;
         });
 
     private async void QuickConnectCommandCallback(DiskConnectionModel model)
         => await ExceptionToNotificationConverter.WrapExceptionsAsync(async () =>
         {
-            // TODO: pass the model to the driver as a newly configured connection
-            throw new NotImplementedException();
+            if (ViewModel.IsLoading) return;
+
+            bool success = await App.DriverController.IntegrateChanges(model);
+            if (success) ViewModel.Connections.Remove(model);
+
+            NotificationHelper.ShowChangeSaveStatus(success);
         });
 }

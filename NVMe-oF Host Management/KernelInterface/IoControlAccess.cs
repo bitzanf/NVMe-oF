@@ -9,7 +9,7 @@ using KernelInterface.Interop;
 
 namespace KernelInterface
 {
-    public sealed class IoControlAccess : IDriverControl, IDisposable
+    public sealed class IoControlAccess : IDriverControl
     {
         private readonly SafeFileHandle _handle;
 
@@ -65,8 +65,6 @@ namespace KernelInterface
             _handle?.Dispose();
         }
 
-        public IntPtr GetRawHandle() => _handle.DangerousGetHandle();
-        
         public List<DiskDescriptor> GetConfiguredConnections()
         {
             int sizeExpected = 0;

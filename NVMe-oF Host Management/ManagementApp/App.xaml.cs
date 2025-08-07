@@ -31,6 +31,8 @@ namespace ManagementApp
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             _window = new MainWindow();
+            _window.Closed += (_, _) => DriverController.DisconnectFromDriver();
+            
             _window.Activate();
         }
     }
