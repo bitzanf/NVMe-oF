@@ -1,4 +1,6 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
@@ -6,10 +8,15 @@ using ManagementApp.Models;
 
 namespace ManagementApp.ViewModels;
 
+/// <summary>
+/// MVVM ViewModel representing a list of all connections, tracks modifications and removals
+/// </summary>
 internal partial class DiskListViewModel : ObservableBase
 {
     private readonly DispatcherQueue _queue;
     private bool _isLoading, _suppressConnectionsUpdate, _hasChanges;
+
+    private readonly List<Guid> _removedConnections = [];
 
     public bool IsLoading
     {
@@ -27,12 +34,18 @@ internal partial class DiskListViewModel : ObservableBase
     public bool HasChanges
     {
         get => _hasChanges;
-        set => SetField(ref _hasChanges, value);
+        set
+        {
+            _removedConnections.Clear();
+            SetField(ref _hasChanges, value);
+        }
     }
 
     public bool KnownNoDisks => !IsLoading && Connections.Count == 0;
 
     public ObservableCollection<DiskConnectionModel> Connections = [];
+
+    public IReadOnlyList<Guid> RemovedConnections => _removedConnections;
 
     public DiskListViewModel()
     {
@@ -53,12 +66,17 @@ internal partial class DiskListViewModel : ObservableBase
         OnPropertyChanged(nameof(KnownNoDisks));
     }
 
+    /// <summary>
+    /// Load the connections from the driver controller and populate the display collection
+    /// </summary>
+    /// <returns></returns>
     public async Task LoadConnections()
     {
         await _queue.EnqueueAsync(() =>
         {
             IsLoading = true;
             Connections.Clear();
+            _removedConnections.Clear();
         });
 
         var connections = App.DriverController.Connections;
@@ -80,6 +98,10 @@ internal partial class DiskListViewModel : ObservableBase
          });
     }
 
+    /// <summary>
+    /// Force the driver controller to reload all connections from the kernel and calls <see cref="LoadConnections"/>
+    /// </summary>
+    /// <returns></returns>
     public async Task ForceReload()
     {
         await _queue.EnqueueAsync(() => IsLoading = true);
@@ -87,9 +109,14 @@ internal partial class DiskListViewModel : ObservableBase
         await LoadConnections();
     }
 
+    /// <summary>
+    /// Delete the given connection
+    /// </summary>
+    /// <param name="connection"></param>
     public void DeleteConnection(DiskConnectionModel connection)
     {
         Connections.Remove(connection);
+        _removedConnections.Add(connection.Descriptor.Guid);
         HasChanges = true;
     }
 }

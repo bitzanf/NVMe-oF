@@ -4,6 +4,9 @@ using ManagementApp.Models;
 
 namespace ManagementApp.ViewModels;
 
+/// <summary>
+/// MVVM ViewModel representing quick connections using a discovery service
+/// </summary>
 internal class QuickConnectViewModel : ObservableBase
 {
     private bool _isLoading;

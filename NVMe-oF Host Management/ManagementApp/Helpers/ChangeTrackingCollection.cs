@@ -5,14 +5,34 @@ using System.Linq;
 
 namespace ManagementApp.Helpers;
 
+/// <summary>
+/// A dictionary supporting transaction operations (change tracking)
+/// </summary>
+/// <typeparam name="TKey"></typeparam>
+/// <typeparam name="TValue"></typeparam>
 public class ChangeTrackingCollection<TKey, TValue> :
     IDictionary<TKey, TValue>,
     IReadOnlyDictionary<TKey, TValue>
     where TKey : notnull
 {
+    /// <summary>
+    /// Underlying dictionary that actually stores the data
+    /// </summary>
     private readonly Dictionary<TKey, TValue> _dictionary;
+
+    /// <summary>
+    /// Set of keys modified since the last commit
+    /// </summary>
     private HashSet<TKey> _modified = [];
+
+    /// <summary>
+    /// Set of completely new keys since the last commit
+    /// </summary>
     private HashSet<TKey> _newlyAdded = [];
+
+    /// <summary>
+    /// Set of keys removed since the last commit
+    /// </summary>
     private HashSet<TKey> _removed = [];
 
     public ChangeTrackingCollection() => _dictionary = [];
@@ -21,6 +41,10 @@ public class ChangeTrackingCollection<TKey, TValue> :
 
     public ChangeTrackingCollection(IEnumerable<KeyValuePair<TKey, TValue>> dictionary) => _dictionary = dictionary.ToDictionary();
 
+    /// <summary>
+    /// Commit the current state and get the change information
+    /// </summary>
+    /// <returns></returns>
     public CommitResult Commit()
     {
         var result = new CommitResult
@@ -103,10 +127,21 @@ public class ChangeTrackingCollection<TKey, TValue> :
     public ICollection<TKey> Keys => _dictionary.Keys;
     public ICollection<TValue> Values => _dictionary.Values;
 
-    public struct CommitResult
+    public readonly struct CommitResult
     {
+        /// <summary>
+        /// Set of keys modified since the last commit
+        /// </summary>
         public HashSet<TKey> Modified { get; init; }
+        
+        /// <summary>
+        /// Set of completely new keys since the last commit
+        /// </summary>
         public HashSet<TKey> Added { get; init; }
+        
+        /// <summary>
+        /// Set of keys removed since the last commit
+        /// </summary>
         public HashSet<TKey> Removed { get; init; }
     }
 }

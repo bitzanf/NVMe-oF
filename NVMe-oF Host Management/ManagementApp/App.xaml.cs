@@ -13,6 +13,9 @@ namespace ManagementApp
     {
         private MainWindow? _window;
 
+        /// <summary>
+        /// Driver controller singleton
+        /// </summary>
         internal static DriverController DriverController = new();
 
         /// <summary>

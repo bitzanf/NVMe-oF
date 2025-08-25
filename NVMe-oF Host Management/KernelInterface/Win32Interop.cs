@@ -151,6 +151,10 @@ namespace KernelInterface.Interop
             IntPtr overlapped
         );
 
+        /// <summary>
+        /// Throws an error if the latest Win32 operation failed
+        /// </summary>
+        /// <exception cref="System.ComponentModel.Win32Exception"></exception>
         internal static void ThrowIfLastWin32Error()
         {
             var err = Marshal.GetLastWin32Error();

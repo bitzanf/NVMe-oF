@@ -4,15 +4,19 @@ using System;
 
 using ConnectionStatus = KernelInterface.ConnectionStatus;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace ManagementApp.Controls;
 
 // https://stackoverflow.com/questions/72350934/how-to-implement-a-winui-3-usercontrol-with-combobox-enum-and-dependencypropert
 // https://stackoverflow.com/questions/40184194/xaml-binding-not-working-on-dependency-property
+/// <summary>
+/// An animated indicator displaying the connection's current status
+/// </summary>
 internal sealed partial class ConnectionStatusIndicator : UserControl
 {
+
+    /// <summary>
+    /// The connection's current status
+    /// </summary>
     public ConnectionStatus ConnectionStatus
     {
         get => (ConnectionStatus)GetValue(ConnectionStatusDependencyProperty);
@@ -23,6 +27,9 @@ internal sealed partial class ConnectionStatusIndicator : UserControl
         }
     }
 
+    /// <summary>
+    /// Corner radius of the indicator
+    /// </summary>
     public double Radius
     {
         get => (double)GetValue(RadiusDependencyProperty);
@@ -50,6 +57,11 @@ internal sealed partial class ConnectionStatusIndicator : UserControl
         Loaded += (_, _) => GoToState(ConnectionStatus);
     }
 
+    /// <summary>
+    /// Helper function to change animation states on connection status change
+    /// </summary>
+    /// <param name="status">New status to change the animation into</param>
+    /// <exception cref="ArgumentException"></exception>
     private void GoToState(ConnectionStatus status)
     {
         if (!Enum.IsDefined(status)) throw new ArgumentException(status.ToString(), nameof(status));

@@ -9,12 +9,23 @@ using KernelInterface.Interop;
 
 namespace KernelInterface
 {
+    /// <summary>
+    /// Implements the driver control using IO Control requests to a well-known driver device
+    /// </summary>
     public sealed class IoControlAccess : IDriverControl
     {
         private readonly SafeFileHandle _handle;
 
         // http://www.ioctls.net/
+        /// <summary>
+        /// IO Control Request to pass to the kernel, makes the StorPort framework pass the request to our driver's processing routine
+        /// </summary>
         private const uint IoctlMiniPortProcessServiceIrp = 0x4d038;
+
+        /// <summary>
+        /// Path to the driver control device
+        /// </summary>
+        public const string DevicePath = @"\\.\NvmeOfController";
 
         public string HostNqn
         {
@@ -38,6 +49,7 @@ namespace KernelInterface
 
                 return nqn;
             }
+
             set => RequestWrapper(
                     0,
                     () => MarshalRequest.SetHostNqn(value),
@@ -45,10 +57,13 @@ namespace KernelInterface
                 );
         }
 
-        public IoControlAccess(string devicePath)
+        /// <summary>
+        /// Initialize the controller and connect to the driver
+        /// </summary>
+        public IoControlAccess()
         {
             _handle = Win32Interop.CreateFile(
-                devicePath,
+                DevicePath,
                 AccessMask.GenericRead | AccessMask.GenericWrite,
                 FileShareMode.Read | FileShareMode.Write,
                 IntPtr.Zero,
@@ -193,6 +208,15 @@ namespace KernelInterface
             return statistics;
         }
 
+        /// <summary>
+        /// Win32 DeviceIoControl wrapper
+        /// </summary>
+        /// <param name="inBuffer">Pointer to a buffer populated with the request</param>
+        /// <param name="inBufferSize">Size of the request buffer</param>
+        /// <param name="outBuffer">Pointer to a buffer to be populated with the kernel's response</param>
+        /// <param name="outBufferSize">Size of the output buffer</param>
+        /// <param name="bytesReturned">Actual size of data returned from the kernel</param>
+        /// <exception cref="System.ComponentModel.Win32Exception" />
         private void Ioctl(
             IntPtr inBuffer,
             uint inBufferSize,
@@ -215,6 +239,13 @@ namespace KernelInterface
             if (success == 0) Win32Interop.ThrowIfLastWin32Error();
         }
 
+        ///- <summary>
+        /// Prepares a request using the given callback, allocates a buffer for response data and calls a response processing the kernel's response
+        /// </summary>
+        /// <param name="outputBufferRequestedSize">How many bytes to allocate for the kernel's response, if 0, no allocation is performed</param>
+        /// <param name="makeRequest">Callback preparing the actual request byte stream</param>
+        /// <param name="processResponse">Callback processing the kernel's response, may be null</param>
+        /// <exception cref="ArgumentException"></exception>
         private void RequestWrapper(
             int outputBufferRequestedSize,
             Func<MemoryStream> makeRequest,

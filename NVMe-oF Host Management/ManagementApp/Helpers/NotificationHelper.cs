@@ -7,6 +7,10 @@ namespace ManagementApp.Helpers;
 
 public static class NotificationHelper
 {
+    /// <summary>
+    /// Show a &quot;Changes were |not| saved&quot; notification (error / success)
+    /// </summary>
+    /// <param name="success">Whether to display an error or a success notification</param>
     public static void ShowChangeSaveStatus(bool success)
     {
         var loader = ResourceLoader.GetForViewIndependentUse();

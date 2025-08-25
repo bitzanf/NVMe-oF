@@ -8,6 +8,13 @@ namespace KernelInterface.DataMarshalling
 {
     public static class MarshalResponse
     {
+        /// <summary>
+        /// f32 PacketsPerSecond <br />
+        /// u32 AverageRequestSize <br />
+        /// u64 TotalDataTransferred
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
         public static Statistics GetDriverStatistics(byte[] bytes)
             => StreamWrapper(bytes, reader => new Statistics
             {
@@ -16,9 +23,20 @@ namespace KernelInterface.DataMarshalling
                 TotalDataTransferred = reader.ReadUInt64()
             });
 
+        /// <summary>
+        /// &lt;DiskDescriptor&gt;
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
         public static DiskDescriptor GetConnection(byte[] bytes)
             => StreamWrapper(bytes, ReadDiskDescriptor);
 
+        /// <summary>
+        /// i32 Count <br />
+        /// &lt;DiskDescriptor&gt; [$Count]
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
         public static List<DiskDescriptor> GetAllConnections(byte[] bytes)
             => StreamWrapper(bytes, reader =>
             {
@@ -30,6 +48,12 @@ namespace KernelInterface.DataMarshalling
                 return connections;
             });
 
+        /// <summary>
+        /// i32 Count <br />
+        /// (&lt;NetworkConnection&gt;,&lt;String&gt; NQN) [$Count]
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
         public static List<DiskDescriptor> GetDiscoveryResponse(byte[] bytes)
             => StreamWrapper(bytes, reader =>
             {
@@ -51,9 +75,21 @@ namespace KernelInterface.DataMarshalling
                 return connections;
             });
 
+        /// <summary>
+        /// &lt;String&gt;
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
         public static string GetHostNqn(byte[] bytes)
             => StreamWrapper(bytes, reader => reader.ReadString());
 
+        /// <summary>
+        /// Reads the specified object from the given byte array via the specified reading callback
+        /// </summary>
+        /// <typeparam name="T">Type to extract from the byte array</typeparam>
+        /// <param name="bytes">Byte array returned from kernel</param>
+        /// <param name="callback">Reading callback</param>
+        /// <returns></returns>
         private static T StreamWrapper<T>(byte[] bytes, Func<BinaryReader, T> callback)
         {
             var stream = new MemoryStream(bytes);
@@ -71,6 +107,14 @@ namespace KernelInterface.DataMarshalling
             }
         }
 
+        /// <summary>
+        /// u8[16] Guid <br />
+        /// &lt;NetworkConnection&gt; <br />
+        /// &lt;String&gt; NQN <br />
+        /// &lt;String&gt; NtObjectPath
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         private static DiskDescriptor ReadDiskDescriptor(BinaryReader reader)
         {
             var descriptor = new DiskDescriptor();
@@ -85,6 +129,14 @@ namespace KernelInterface.DataMarshalling
             return descriptor;
         }
 
+        /// <summary>
+        /// i32 TransportType <br />
+        /// i32 AddressFamily <br />
+        /// u16 Port <br />
+        /// &lt;String&gt; Address
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         private static NetworkConnection ReadNetworkConnection(BinaryReader reader)
         {
             var network = new NetworkConnection

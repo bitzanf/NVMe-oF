@@ -4,6 +4,9 @@ using ManagementApp.Helpers;
 
 namespace ManagementApp.ViewModels;
 
+/// <summary>
+/// MVVM ViewModel representing various driver settings and controls
+/// </summary>
 internal class SettingsViewModel : ObservableBase
 {
     private readonly DriverServiceHelper _driverServiceHelper;

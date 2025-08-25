@@ -6,24 +6,23 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Resources;
 using ManagementApp.Converters;
 using ManagementApp.Dialogs;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace ManagementApp.Views
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// Page that allows the user to edit a single connection (disk)
     /// </summary>
     public sealed partial class DiskEditPage : Page
     {
         internal DiskEditViewModel ViewModel = null!;
 
+        /// <summary>
+        /// Show the disk's Guid and object path?
+        /// </summary>
         public bool ShowInfo => !string.IsNullOrEmpty(ViewModel?.NtObjectPath);
 
         public DiskEditPage()
@@ -35,6 +34,10 @@ namespace ManagementApp.Views
         }
 
         // https://learn.microsoft.com/en-us/windows/apps/design/basics/navigate-between-two-pages
+        /// <summary>
+        /// Load an existing connection or create a new one, depending on if we got a valid Guid
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             switch (e.Parameter)
@@ -52,30 +55,48 @@ namespace ManagementApp.Views
             base.OnNavigatedTo(e);
         }
 
+        /// <summary>
+        /// Validate &amp; save the current changes and exit the page
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void BtnSave_OnClick(object sender, RoutedEventArgs e)
             => await ExceptionToNotificationConverter.WrapExceptionsAsync(async () =>
             {
                 if (!Validate()) return;
 
-                bool success = await App.DriverController.IntegrateChanges(ViewModel.Model);
+                bool success;
+                if (ViewModel.Model.Descriptor.Guid == Guid.Empty)
+                    success = await App.DriverController.AddNewConnection(ViewModel.Model);
+                else
+                    success = await App.DriverController.IntegrateChanges(ViewModel.Model);
+
                 NotificationHelper.ShowChangeSaveStatus(success);
 
                 // We've edited and saved the disk, return to previous page (likely DiskSetupPage)
                 Frame.GoBack();
             });
 
+        /// <summary>
+        /// Cancel the current changes
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnCancel_OnClick(object sender, RoutedEventArgs e)
         {
             Frame.GoBack();
         }
 
+        /// <summary>
+        /// Simple validation of the given data; validation errors get shown as a notification
+        /// </summary>
+        /// <returns></returns>
         private bool Validate()
         {
             var loader = ResourceLoader.GetForViewIndependentUse();
 
             var descriptor = ViewModel.Model.Descriptor;
             List<string> validationErrors = [];
-
 
             if (string.IsNullOrWhiteSpace(descriptor.Nqn))
                 validationErrors.Add(loader.GetString("ValidationError_Nqn"));
@@ -97,6 +118,10 @@ namespace ManagementApp.Views
             return false;
         }
 
+        /// <summary>
+        /// Load connection information by the given guid
+        /// </summary>
+        /// <param name="guid"></param>
         private void LoadViewModel(Guid guid)
         {
             var model = App.DriverController.TryGetModel(guid);
@@ -116,6 +141,10 @@ namespace ManagementApp.Views
             }
         }
 
+        /// <summary>
+        /// Present the user with a dialog warning them about unsaved changes
+        /// </summary>
+        /// <returns></returns>
         private async Task<bool> RemindUnsavedChanges_IsExitOk()
         {
             if (!ViewModel.HasChanges) return true;

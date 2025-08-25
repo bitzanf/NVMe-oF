@@ -4,6 +4,10 @@ using System.Windows.Input;
 
 namespace ManagementApp.Helpers;
 
+/// <summary>
+/// UI Command using a DiskConnectionModel as a parameter passed to the given callback
+/// </summary>
+/// <param name="action"></param>
 internal partial class DiskCommandEventHandler(Action<DiskConnectionModel> action) : ICommand
 {
 #pragma warning disable CS0067

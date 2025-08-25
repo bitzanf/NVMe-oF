@@ -4,13 +4,10 @@ using ManagementApp.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace ManagementApp.Views;
 
 /// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
+/// View allowing the user to change the driver's NQN or start and stop its service
 /// </summary>
 public sealed partial class SettingsPage : Page
 {

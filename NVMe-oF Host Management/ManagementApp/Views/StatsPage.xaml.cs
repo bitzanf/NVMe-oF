@@ -1,16 +1,12 @@
-using System.Numerics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ManagementApp.Converters;
 using ManagementApp.ViewModels;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace ManagementApp.Views;
 
 /// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
+/// View displaying various driver statistics to the user
 /// </summary>
 public sealed partial class StatsPage : Page
 {
@@ -28,6 +24,13 @@ public sealed partial class StatsPage : Page
 
     private void Reload() => ExceptionToNotificationConverter.WrapExceptions(ViewModel.Reload);
 
+#pragma warning disable CA1822
+    /// <summary>
+    /// Automatically scales the given value to Giga/Mega/Kilo
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="base2">true for base2, false for base10</param>
+    /// <returns></returns>
     internal string AutoScale(ulong value, bool base2)
     {
         double scaling = base2 ? 1024 : 1000;
@@ -54,4 +57,5 @@ public sealed partial class StatsPage : Page
 
         return $"{div:F3} {scale}{(scale.HasValue && base2 ? "i" : string.Empty)}B";
     }
+#pragma warning restore CA1822
 }

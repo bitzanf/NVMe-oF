@@ -3,6 +3,10 @@ using ManagementApp.Models;
 using System;
 namespace ManagementApp.ViewModels;
 
+/// <summary>
+/// MVVM ViewModel wrapping a DiskConnectionModel
+/// </summary>
+/// <param name="diskConnection"></param>
 internal partial class DiskEditViewModel(DiskConnectionModel? diskConnection) : ObservableBase
 {
     private bool _hasChanges;

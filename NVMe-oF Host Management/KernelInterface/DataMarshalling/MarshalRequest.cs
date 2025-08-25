@@ -18,19 +18,37 @@ namespace KernelInterface.DataMarshalling
 
         /// <summary>
         /// i32 RequestType <br />
-        /// u8[] Guid
+        /// &lt;Guid&gt;
         /// </summary>
         /// <param name="connectionId"></param>
         /// <returns></returns>
         public static MemoryStream RemoveConnection(Guid connectionId)
             => StreamWrapper(DriverRequestType.RemoveConnection, writer => Write(writer, connectionId));
 
+        /// <summary>
+        /// i32 RequestType <br />
+        /// &lt;Guid&gt;
+        /// </summary>
+        /// <param name="connectionId"></param>
+        /// <returns></returns>
         public static MemoryStream GetConnectionStatus(Guid connectionId)
             => StreamWrapper(DriverRequestType.GetConnectionStatus, writer => Write(writer, connectionId));
 
+        /// <summary>
+        /// i32 RequestType
+        /// </summary>
+        /// <returns></returns>
         public static MemoryStream GetDriverStatistics()
             => StreamWrapper(DriverRequestType.GetStatistics, null);
 
+        /// <summary>
+        /// i32 RequestType <br />
+        /// &lt;Guid&gt; <br />
+        /// &lt;Descriptor&gt;
+        /// </summary>
+        /// <param name="descriptor"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public static MemoryStream ModifyConnection(DiskDescriptor descriptor)
             => StreamWrapper(DriverRequestType.ModifyConnection, writer =>
             {
@@ -40,39 +58,87 @@ namespace KernelInterface.DataMarshalling
                 Write(writer, descriptor);
             });
 
+        /// <summary>
+        /// i32 RequestType <br />
+        /// &lt;Guid&gt;
+        /// </summary>
+        /// <param name="connectionId"></param>
+        /// <returns></returns>
         public static MemoryStream GetConnectionSize(Guid connectionId)
             => StreamWrapper(DriverRequestType.GetConnectionSize, writer => Write(writer, connectionId));
 
+        /// <summary>
+        /// i32 RequestType <br />
+        /// &lt;Guid&gt;
+        /// </summary>
+        /// <param name="connectionId"></param>
+        /// <returns></returns>
         public static MemoryStream GetConnection(Guid connectionId)
             => StreamWrapper(DriverRequestType.GetConnection, writer => Write(writer, connectionId));
 
+        /// <summary>
+        /// i32 RequestType
+        /// </summary>
+        /// <returns></returns>
         public static MemoryStream GetAllConnectionsSize()
             => StreamWrapper(DriverRequestType.GetAllConnectionsSize, null);
 
+        /// <summary>
+        /// i32 RequestType
+        /// </summary>
+        /// <returns></returns>
         public static MemoryStream GetAllConnections()
             => StreamWrapper(DriverRequestType.GetAllConnections, null);
 
+        /// <summary>
+        /// i32 RequestType <br />
+        /// &lt;NetworkConnection&gt;
+        /// </summary>
+        /// <param name="network"></param>
+        /// <returns></returns>
         public static MemoryStream DiscoveryRequest(NetworkConnection network)
             => StreamWrapper(DriverRequestType.DiscoveryRequest, writer => Write(writer, network));
 
+        /// <summary>
+        /// i32 RequestType
+        /// </summary>
+        /// <returns></returns>
         public static MemoryStream GetDiscoveryResponseSize()
             => StreamWrapper(DriverRequestType.GetDiscoveryResponseSize, null);
 
+        /// <summary>
+        /// i32 RequestType
+        /// </summary>
+        /// <returns></returns>
         public static MemoryStream GetDiscoveryResponse()
             => StreamWrapper(DriverRequestType.GetDiscoveryResponse, null);
 
+        /// <summary>
+        /// i32 RequestType
+        /// </summary>
+        /// <returns></returns>
         public static MemoryStream GetHostNqn()
             => StreamWrapper(DriverRequestType.GetHostNqn, null);
 
+        /// <summary>
+        /// i32 RequestType
+        /// </summary>
+        /// <returns></returns>
         public static MemoryStream GetHostNqnSize()
             => StreamWrapper(DriverRequestType.GetHostNqnSize, null);
 
+        /// <summary>
+        /// i32 RequestType <br />
+        /// &lt;String&gt; NQN
+        /// </summary>
+        /// <param name="nqn"></param>
+        /// <returns></returns>
         public static MemoryStream SetHostNqn(string nqn)
             => StreamWrapper(DriverRequestType.SetHostNqn, writer => writer.Write(nqn));
 
 
         /// <summary>
-        /// Writes the request ID and calls the actual writing callback
+        /// Writes the request ID and calls the actual writing callback, which generates the request-specific data
         /// </summary>
         /// <param name="request"></param>
         /// <param name="callback"></param>

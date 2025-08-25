@@ -6,6 +6,9 @@ using FontIcon = Microsoft.UI.Xaml.Controls.FontIcon;
 
 namespace ManagementApp.Converters;
 
+/// <summary>
+/// Converts a ConnectionStatus to a SegoeUI FontIcon that represents the status
+/// </summary>
 internal partial class ConnectionStatusToIconConverter : IValueConverter
 {
     public object? Convert(object value, Type targetType, object parameter, string language)
@@ -20,7 +23,9 @@ internal partial class ConnectionStatusToIconConverter : IValueConverter
     public object? ConvertBack(object value, Type targetType, object parameter, string language) => null;
 }
 
-// partial because WinRT
+/// <summary>
+/// Converts a ConnectionStatus to a localized textual representation (mainly for tooltip usage)
+/// </summary>
 internal partial class ConnectionStatusToTextConverter : IValueConverter
 {
     public object? Convert(object value, Type targetType, object parameter, string language)

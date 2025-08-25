@@ -6,13 +6,10 @@ using Microsoft.UI.Xaml.Controls;
 using System.Windows.Input;
 using ManagementApp.Helpers;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace ManagementApp.Views;
 
 /// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
+/// View that allows the user to perform discovery requests and quickly connect to discovered disks
 /// </summary>
 public sealed partial class QuickConnectionPage : Page
 {
@@ -22,6 +19,11 @@ public sealed partial class QuickConnectionPage : Page
 
     public QuickConnectionPage() => InitializeComponent();
 
+    /// <summary>
+    /// Connect to the given discovery controller and request all possible connections
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private async void BtnConnect_OnClick(object sender, RoutedEventArgs e)
         => await ExceptionToNotificationConverter.WrapExceptionsAsync(async () =>
         {
@@ -33,12 +35,16 @@ public sealed partial class QuickConnectionPage : Page
             ViewModel.IsLoading = false;
         });
 
+    /// <summary>
+    /// Connect to a selected remote disk
+    /// </summary>
+    /// <param name="model"></param>
     private async void QuickConnectCommandCallback(DiskConnectionModel model)
         => await ExceptionToNotificationConverter.WrapExceptionsAsync(async () =>
         {
             if (ViewModel.IsLoading) return;
 
-            bool success = await App.DriverController.IntegrateChanges(model);
+            bool success = await App.DriverController.AddNewConnection(model);
             if (success) ViewModel.Connections.Remove(model);
 
             NotificationHelper.ShowChangeSaveStatus(success);

@@ -4,6 +4,9 @@ using System.Runtime.CompilerServices;
 
 namespace ManagementApp.ViewModels;
 
+/// <summary>
+/// Base object that raises events on property changes
+/// </summary>
 internal abstract class ObservableBase : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;

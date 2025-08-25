@@ -2,6 +2,9 @@
 
 namespace ManagementApp.ViewModels;
 
+/// <summary>
+/// MVVM ViewModel wrapping driver runtime statistics
+/// </summary>
 internal class StatsViewModel : ObservableBase
 {
     private Statistics? _statistics;

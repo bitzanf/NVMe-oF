@@ -6,6 +6,9 @@ using Windows.ApplicationModel.Resources;
 
 namespace ManagementApp.Converters;
 
+/// <summary>
+/// Catches any exception and displays it (along with a stack trace) in the main window as an error notification
+/// </summary>
 public static class ExceptionToNotificationConverter
 {
     public static T WrapExceptions<T>(Func<T> callback)
@@ -58,6 +61,10 @@ public static class ExceptionToNotificationConverter
         }
     }
 
+    /// <summary>
+    /// Create and display an error notification for the given exception
+    /// </summary>
+    /// <param name="ex"></param>
     private static void ShowNotification(Exception ex)
     {
         if (MainWindow.Instance == null) return;

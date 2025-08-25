@@ -5,21 +5,31 @@ using KernelInterface;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace ManagementApp.Dialogs;
 
 /// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
+/// Dialog that presents the user with details of a connection they are about to delete (as a modal window)
 /// </summary>
 internal sealed partial class ConfirmDeleteDialog : Page
 {
+    /// <summary>
+    /// The connection about to be deleted
+    /// </summary>
     private readonly Models.DiskConnectionModel _connection;
 
+    /// <summary>
+    /// The connection's network information
+    /// </summary>
     private NetworkConnection NetworkConnection => _connection.Descriptor.NetworkConnection;
 
+    /// <summary>
+    /// Textual representation of the network connection address' type for display
+    /// </summary>
     public string AddressTypeString => $"{NetworkConnection.AddressFamily} / {NetworkConnection.TransportType}";
+
+    /// <summary>
+    /// Textual representation of the network connection address and port for display
+    /// </summary>
     public string AddressString => $"{NetworkConnection.TransportAddress} : {NetworkConnection.TransportServiceId}";
 
 
@@ -29,6 +39,12 @@ internal sealed partial class ConfirmDeleteDialog : Page
         _connection = connection;
     }
 
+    /// <summary>
+    /// Displays the warning dialog and asks for confirmation
+    /// </summary>
+    /// <param name="xamlRoot">The current view's XAML root</param>
+    /// <param name="connection">The connection requested to be deleted by the user</param>
+    /// <returns>ContentDialogResult.Primary on delete confirmation</returns>
     internal static async Task<ContentDialogResult> ShowDialog(XamlRoot xamlRoot, Models.DiskConnectionModel connection)
     {
         var loader = ResourceLoader.GetForViewIndependentUse();

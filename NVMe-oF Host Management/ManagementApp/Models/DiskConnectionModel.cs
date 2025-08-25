@@ -2,6 +2,9 @@
 
 namespace ManagementApp.Models;
 
+/// <summary>
+/// MVVM Model for a disk connection
+/// </summary>
 internal class DiskConnectionModel
 {
     public DiskDescriptor Descriptor { get; init; } = new();
