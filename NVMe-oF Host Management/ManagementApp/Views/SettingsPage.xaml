@@ -32,7 +32,7 @@
                  Grid.Column="0"
                  x:Uid="HostNqnTextBox"
                  HorizontalAlignment="Left"
-                 MinWidth="320"
+                 MinWidth="400"
                  Margin="0,-12,0,0"
                  Text="{x:Bind ViewModel.Nqn, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
 

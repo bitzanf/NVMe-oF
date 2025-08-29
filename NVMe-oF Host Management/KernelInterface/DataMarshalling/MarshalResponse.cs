@@ -66,7 +66,7 @@ namespace KernelInterface.DataMarshalling
                     var descriptor = new DiskDescriptor
                     {
                         NetworkConnection = ReadNetworkConnection(reader),
-                        Nqn = reader.ReadString()
+                        Nqn = ReadString(reader)
                     };
 
                     connections.Add(descriptor);
@@ -81,7 +81,7 @@ namespace KernelInterface.DataMarshalling
         /// <param name="bytes"></param>
         /// <returns></returns>
         public static string GetHostNqn(byte[] bytes)
-            => StreamWrapper(bytes, reader => reader.ReadString());
+            => StreamWrapper(bytes, ReadString);
 
         /// <summary>
         /// Reads the specified object from the given byte array via the specified reading callback
@@ -123,8 +123,8 @@ namespace KernelInterface.DataMarshalling
             descriptor.Guid = new Guid(guidBytes);
 
             descriptor.NetworkConnection = ReadNetworkConnection(reader);
-            descriptor.Nqn = reader.ReadString();
-            descriptor.NtObjectPath = reader.ReadString();
+            descriptor.Nqn = ReadString(reader);
+            descriptor.NtObjectPath = ReadString(reader);
 
             return descriptor;
         }
@@ -144,10 +144,22 @@ namespace KernelInterface.DataMarshalling
                 TransportType = (TransportType)reader.ReadInt32(),
                 AddressFamily = (AddressFamily)reader.ReadInt32(),
                 TransportServiceId = reader.ReadUInt16(),
-                TransportAddress = reader.ReadString()
+                TransportAddress = ReadString(reader)
             };
 
             return network;
+        }
+
+        /// <summary>
+        /// Since <see cref="BinaryReader.ReadString"/> doesn't actually care about the stream's encoding (and reads 7-bit ASCII), we need this ugly hack
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
+        private static string ReadString(BinaryReader reader)
+        {
+            var size = reader.ReadInt32();
+            var chars = reader.ReadChars(size);
+            return new string(chars);
         }
     }
 }

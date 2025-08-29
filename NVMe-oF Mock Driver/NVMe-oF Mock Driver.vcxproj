@@ -118,13 +118,17 @@
   <ItemGroup>
     <ClCompile Include="DataAcquisition.cpp" />
     <ClCompile Include="Driver.cpp" />
+    <ClCompile Include="RegistryKey.cpp" />
     <ClCompile Include="RequestHandling.cpp" />
+    <ClCompile Include="WdfObjectScopeGuard.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataAcquisition.hpp" />
     <ClInclude Include="DriverRequestType.hpp" />
+    <ClInclude Include="RegistryKey.hpp" />
     <ClInclude Include="RequestHandling.hpp" />
     <ClInclude Include="Types.hpp" />
+    <ClInclude Include="WdfObjectScopeGuard.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

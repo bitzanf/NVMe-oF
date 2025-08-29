@@ -38,8 +38,6 @@ namespace KernelInterface
                     bytes => sizeExpected = BitConverter.ToInt32(bytes, 0)
                 );
 
-                CheckResponseLength(sizeof(int), sizeExpected, nameof(MarshalRequest.GetHostNqnSize));
-
                 string nqn = string.Empty;
                 RequestWrapper(
                     sizeExpected,

@@ -134,7 +134,7 @@ namespace KernelInterface.DataMarshalling
         /// <param name="nqn"></param>
         /// <returns></returns>
         public static MemoryStream SetHostNqn(string nqn)
-            => StreamWrapper(DriverRequestType.SetHostNqn, writer => writer.Write(nqn));
+            => StreamWrapper(DriverRequestType.SetHostNqn, writer => Write(writer, nqn));
 
 
         /// <summary>
@@ -176,7 +176,7 @@ namespace KernelInterface.DataMarshalling
             writer.Write((int)network.TransportType);
             writer.Write((int)network.AddressFamily);
             writer.Write(network.TransportServiceId);
-            writer.Write(network.TransportAddress ?? string.Empty);
+            Write(writer, network.TransportAddress ?? string.Empty);
         }
 
         /// <summary>
@@ -188,7 +188,7 @@ namespace KernelInterface.DataMarshalling
         private static void Write(BinaryWriter writer, DiskDescriptor descriptor)
         {
             Write(writer, descriptor.NetworkConnection);
-            writer.Write(descriptor.Nqn);
+            Write(writer, descriptor.Nqn);
         }
 
         /// <summary>
@@ -200,6 +200,19 @@ namespace KernelInterface.DataMarshalling
         {
             var guidBytes = guid.ToByteArray();
             writer.Write(guidBytes);
+        }
+
+        /// <summary>
+        /// i32 Length <br />
+        /// u16[Length] Data
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <param name="str"></param>
+        private static void Write(BinaryWriter writer, string str)
+        {
+            var bytes = Encoding.Unicode.GetBytes(str);
+            writer.Write(bytes.Length);
+            writer.Write(bytes);
         }
     }
 }

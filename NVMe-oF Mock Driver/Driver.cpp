@@ -2,6 +2,7 @@
 #include <wdf.h>
 #include <ntddscsi.h>
 
+#include "RegistryKey.hpp"
 #include "RequestHandling.hpp"
 
 constexpr UNICODE_STRING DeviceSymlink = RTL_CONSTANT_STRING(L"\\??\\NvmeOfController");
@@ -13,16 +14,40 @@ namespace NvmeOFMockDriver {
     EVT_WDF_OBJECT_CONTEXT_CLEANUP EvtDriverCleanup;
     EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL EvtIoQueueIoCtl;
 
-    struct FdoContext {
-        WDFQUEUE Queue;
-    };
+    UNICODE_STRING FdoContext::MakeTempString() const {
+        UNICODE_STRING string;
+        RtlInitEmptyUnicodeString(&string, StringTempMemory.Data, static_cast<USHORT>(StringTempMemory.ByteLength()));
+        return string;
+    }
 
-    WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(FdoContext, FdoGetContext);
+    NTSTATUS FdoContext::Init(FdoContext* context) {
+        if (context == nullptr) return STATUS_UNSUCCESSFUL;
+
+        context->StringTempMemory.Length = 0x7fff;
+
+        // ReSharper disable once CppMultiCharacterLiteral
+        context->StringTempMemory.Data = static_cast<WCHAR*>(
+            ExAllocatePool2(POOL_FLAG_PAGED, context->StringTempMemory.ByteLength(), '1rfB') // NOLINT(clang-diagnostic-four-char-constants)
+        );
+
+        return STATUS_SUCCESS;
+    }
+
+    void FdoContext::Cleanup(WDFOBJECT object) {
+        auto fdo = static_cast<FdoContext*>(object);
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "FDO Context Cleanup\n"));
+
+        if (fdo->StringTempMemory.Data) {
+            ExFreePool(fdo->StringTempMemory.Data);
+            fdo->StringTempMemory.Data = nullptr;
+            fdo->StringTempMemory.Length = 0;
+        }
+    }
 }
 
 bool CheckStatus(NTSTATUS status) {
     if (!NT_SUCCESS(status)) {
-        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Status: 0x%x", status));
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Status: 0x%x\n", status));
         return false;
     }
     return true;
@@ -53,19 +78,24 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT driverObject, PUNICODE_STRING registryPath) 
 
 namespace NvmeOFMockDriver {
     NTSTATUS EvtDeviceAdd(WDFDRIVER driver, PWDFDEVICE_INIT deviceInit) {
-        PAGED_CODE();
+        PAGED_CODE()
 
         UNREFERENCED_PARAMETER(driver);
         KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL,  DRIVER_LOG_STR "EvtDeviceAdd\n"));
 
         // Create device object
         WDF_OBJECT_ATTRIBUTES attributes;
+        attributes.EvtCleanupCallback = &FdoContext::Cleanup;
         WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, FdoContext);
 
         WDFDEVICE device;
         NTSTATUS status = WdfDeviceCreate(&deviceInit, &attributes, &device);
 
+        RegistryKey driverKey, settingsKey, connectionsKey;
+
         auto fdoContext = FdoGetContext(device);
+        if (!CheckStatus(FdoContext::Init(fdoContext))) goto exit;
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "Initialized FDO Context\n"));
 
         if (!CheckStatus(status)) goto exit;
         KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "Created WDF device\n"));
@@ -87,13 +117,24 @@ namespace NvmeOFMockDriver {
         status = WdfDeviceCreateSymbolicLink(device, &DeviceSymlink);
         if (!CheckStatus(status)) goto exit;
         KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "Created device symlink\n"));
+
+        status = RegistryKey::Open(device, KEY_READ | KEY_WRITE, driverKey);
+        if (!CheckStatus(status)) goto exit;
+
+        status = driverKey.CreateSubKey(&SETTINGS_KEY_PATH, KEY_READ | KEY_WRITE, settingsKey);
+        if (!CheckStatus(status)) goto exit;
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "Created Settings registry key\n"));
+
+        status = driverKey.CreateSubKey(&CONNECTIONS_KEY_PATH, KEY_READ | KEY_WRITE, connectionsKey);
+        if (!CheckStatus(status)) goto exit;
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "Created Connections registry key\n"));
         
         exit:
         return status;
     }
 
     void EvtDriverCleanup(WDFOBJECT driver) {
-        PAGED_CODE();
+        PAGED_CODE()
         UNREFERENCED_PARAMETER(driver);
     }
 
@@ -117,24 +158,30 @@ namespace NvmeOFMockDriver {
             return STATUS_UNSUCCESSFUL;
         }
 
-        int driverRequest;
+        DriverRequestType driverRequest;
+        if (bufferSize < sizeof(driverRequest)) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small. Cannot determine application request!\n"));
+            return STATUS_UNSUCCESSFUL;
+        }
+
         memcpy(&driverRequest, inputBuffer, sizeof(driverRequest));
 
         KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "Received application request %d\n", driverRequest));
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "Caller passed %llu bytes of data\n", inputBufferSize));
 
         auto status = HandleApplicationRequest(
             device,
             request,
-            static_cast<DriverRequestType>(driverRequest),
+            driverRequest,
             {
                 .Data = static_cast<BYTE*>(inputBuffer) + sizeof(int),
-                .Length =inputBufferSize - sizeof(int)
+                .Length = inputBufferSize - sizeof(int)
             },
             outputBufferSize,
             written
         );
 
-        CheckStatus(status);
+        CHECK_STATUS(status)
         return status;
     }
 
@@ -151,6 +198,8 @@ namespace NvmeOFMockDriver {
 
         size_t written = 0;
         auto result = IoCtlInner(device, request, outputBufferSize, inputBufferSize, written);
+
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "Returning %llu bytes to caller\n", written));
         WdfRequestCompleteWithInformation(request, result, written);
     }
 }
