@@ -39,6 +39,9 @@
     <ClCompile Include="WdfObjectScopeGuard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DTOs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DriverRequestType.hpp">
@@ -57,6 +60,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WdfObjectScopeGuard.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DTOs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

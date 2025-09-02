@@ -7,6 +7,9 @@
 #include "RegistryKey.hpp"
 #include "WdfObjectScopeGuard.hpp"
 
+// TODO: https://learn.microsoft.com/en-us/windows-hardware/drivers/wdf/introduction-to-registry-keys-for-drivers
+//  set default from inf
+
 // ReSharper disable line StringLiteralTypo
 constexpr wchar_t NQN_DEFAULT[] = L"nqn.2025-08.cz.bitzanf.nvmeof:wdf_mock_driver";
 constexpr UNICODE_STRING NQN_KEY_NAME = RTL_CONSTANT_STRING(L"NQN");

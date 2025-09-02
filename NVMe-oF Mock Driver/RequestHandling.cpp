@@ -2,6 +2,7 @@
 // ReSharper disable CppClangTidyClangDiagnosticExtraSemiStmt
 #include "RequestHandling.hpp"
 #include "DataAcquisition.hpp"
+#include "DTOs.hpp"
 
 #include <ntstatus.h>
 #include <wdm.h>
@@ -58,50 +59,10 @@ static const char* RequestToString(DriverRequestType request) {
     return "<unknown>";
 }
 
-static size_t WriteString(NvmeOFMockDriver::Span<BYTE> buffer, const UNICODE_STRING& string, const size_t offset = 0) {
-    const UINT32 len = string.Length;
-    auto p = buffer.Data + offset;
-
-    memcpy(p, &len, sizeof(len));
-    p += sizeof(len);
-
-    memcpy(p, string.Buffer, len);
-    return sizeof(len) + len;
-}
-
-static size_t ReadString(UNICODE_STRING& string, const NvmeOFMockDriver::Span<BYTE> buffer) {
-    UINT32 len;
-    if (buffer.Length < sizeof(len)) {
-        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_WARNING_LEVEL, DRIVER_LOG_STR __FUNCTION__ " Invalid buffer (too small)\n"));
-        return 0;
-    }
-
-    memcpy(&len, buffer.Data, sizeof(len));
-    if (len >= 0xffff) {
-        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_WARNING_LEVEL, DRIVER_LOG_STR __FUNCTION__ " Invalid buffer (string too long)\n"));
-        return 0;
-    }
-
-    if (len > buffer.Length - sizeof(len)) {
-        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_WARNING_LEVEL, DRIVER_LOG_STR __FUNCTION__ " Invalid buffer (too small for given string length)\n"));
-        return 0;
-    }
-
-    if (len > string.MaximumLength) {
-        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_WARNING_LEVEL, DRIVER_LOG_STR __FUNCTION__ " String is of insufficient size for the given data\n"));
-        return 0;
-    }
-
-    const auto strBytes = min(len, string.MaximumLength);
-
-    memcpy(string.Buffer, buffer.Data + sizeof(len), strBytes);
-    string.Length = static_cast<USHORT>(strBytes);
-
-    return strBytes + sizeof(len);
-}
-
 namespace NvmeOFMockDriver {
     namespace RequestHandlers {
+
+        using namespace DTO;
 
         REQUEST_HANDLER_HEADER(GetHostNqn) {
             REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;

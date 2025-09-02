@@ -1,4 +1,5 @@
 // ReSharper disable CppClangTidyCppcoreguidelinesMissingStdForward
+// ReSharper disable CppClangTidyPerformanceEnumSize
 #ifndef TYPES_HPP
 #define TYPES_HPP
 
@@ -40,6 +41,27 @@ namespace NvmeOFMockDriver {
     };
 
     WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(FdoContext, FdoGetContext);
+
+    namespace DTO {
+        enum class TransportType : int
+        {
+            Tcp,
+            Rdma
+        };
+
+        enum class AddressFamily : int
+        {
+            IPv4,
+            IPv6
+        };
+
+        enum class ConnectionStatus
+        {
+            Disconnected,
+            Connecting,
+            Connected
+        };
+    }
 }
 
 bool CheckStatus(NTSTATUS status);
