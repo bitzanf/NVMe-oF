@@ -63,10 +63,13 @@ namespace KernelInterface.DataMarshalling
                 var connections = new List<DiskDescriptor>(count);
                 for (int i = 0; i < count; i++)
                 {
+                    var connection = ReadNetworkConnection(reader);
+                    var nqn = ReadString(reader);
+
                     var descriptor = new DiskDescriptor
                     {
-                        NetworkConnection = ReadNetworkConnection(reader),
-                        Nqn = ReadString(reader)
+                        NetworkConnection = connection,
+                        Nqn = nqn
                     };
 
                     connections.Add(descriptor);

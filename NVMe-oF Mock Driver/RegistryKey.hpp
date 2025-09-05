@@ -17,6 +17,7 @@ public:
 
     ~RegistryKey();
     void Close();
+    void Deactivate();
 
     [[nodiscard]] WDFKEY GetKey() const { return Key; }
 

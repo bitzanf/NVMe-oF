@@ -175,8 +175,6 @@ namespace KernelInterface
                 bytes => sizeExpected = BitConverter.ToInt32(bytes, 0)
             );
 
-            CheckResponseLength(sizeof(int), sizeExpected, nameof(MarshalRequest.GetDiscoveryResponseSize));
-
             List<DiskDescriptor> connections = null;
             RequestWrapper(
                 sizeExpected,

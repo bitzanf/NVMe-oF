@@ -131,6 +131,10 @@ namespace NvmeOFMockDriver::DTO {
         return len + strLen;
     }
 
+    size_t NetworkConnection::GetRequiredBufferSize() const {
+        return sizeof(TransportType) + sizeof(AddressFamily) + sizeof(TransportServiceId) + TransportAddress.Length + sizeof(UINT32);
+    }
+
     size_t DiskDescriptor::Read(DiskDescriptor& descriptor, const Span<BYTE> buffer, const size_t offset) {
         DTO_OFFSET_CHECK;
 
@@ -157,5 +161,9 @@ namespace NvmeOFMockDriver::DTO {
         if (nqnLen == 0) return 0;
 
         return netLen + nqnLen;
+    }
+
+    size_t DiskDescriptor::GetRequiredBufferSize() const {
+        return NetworkConnection.GetRequiredBufferSize() + Nqn.Length + sizeof(UINT32);
     }
 }

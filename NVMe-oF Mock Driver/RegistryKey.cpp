@@ -44,6 +44,10 @@ void RegistryKey::Close() {
     }
 }
 
+void RegistryKey::Deactivate() {
+    Key = nullptr;
+}
+
 NTSTATUS RegistryKey::OpenSubKey(const UNICODE_STRING* keyName, ACCESS_MASK access, RegistryKey& key) const {
     RegistryKey temp;
     auto status = WdfRegistryOpenKey(Key, keyName, access, WDF_NO_OBJECT_ATTRIBUTES, &temp.Key);

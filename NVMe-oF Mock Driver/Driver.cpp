@@ -34,7 +34,7 @@ namespace NvmeOFMockDriver {
     }
 
     void FdoContext::Cleanup(WDFOBJECT object) {
-        auto fdo = static_cast<FdoContext*>(object);
+        auto fdo = FdoGetContext(object);
         KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "FDO Context Cleanup\n"));
 
         if (fdo->StringTempMemory.Data) {

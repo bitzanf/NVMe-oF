@@ -55,7 +55,7 @@ namespace NvmeOFMockDriver {
             IPv6
         };
 
-        enum class ConnectionStatus
+        enum class ConnectionStatus : int
         {
             Disconnected,
             Connecting,
@@ -87,6 +87,9 @@ namespace Utils {
 
     template <typename T>
     auto&& Move(T&& obj) { return static_cast<TRemoveReference<T>&&>(obj); }
+
+    template<typename T, size_t Size>
+    constexpr size_t GetArrayLength(T(&)[Size]) { return Size; }
 }
 
 #endif

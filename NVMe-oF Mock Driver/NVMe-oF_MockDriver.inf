@@ -56,7 +56,7 @@ KmdfLibraryVersion = $KMDFVERSION$
 
 [Strings]
 SPSVCINST_ASSOCSERVICE = 0x00000002
-ManufacturerName = "<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+ManufacturerName = "Filip Bitzan"
 DiskName = "NVMe-oF_MockDriver Installation Disk"
 NVMe-oF_MockDriver.DeviceDesc = "NVMe-oF_MockDriver Device"
 NVMe-oF_MockDriver.SVCDESC = "NVMe-oF_MockDriver Service"
