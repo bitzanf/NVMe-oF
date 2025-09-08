@@ -142,6 +142,9 @@ public sealed partial class MainWindow : Window
         }
         
         await App.DriverController.LoadConnections();
+
+        // When the application launches, the disk page (default starting view) needs a manual refresh to initialize its viewmodel
+        if (ContentFrame.Content is DiskPage diskPage) await diskPage.ViewModel.LoadConnections();
     }
 
     /// <summary>

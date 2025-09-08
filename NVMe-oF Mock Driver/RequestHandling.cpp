@@ -16,11 +16,11 @@
 
 #define HANDLE_REQUEST(rq) status = rq (device, request, requestMemory, outputBufferSize, written); break
 
-constexpr NvmeOFMockDriver::DTO::DiskDescriptor DISCOVERY_RESPONSE[]{
+constexpr DTO::DiskDescriptor DISCOVERY_RESPONSE[]{
     {
         .NetworkConnection = {
-            .TransportType = NvmeOFMockDriver::DTO::TransportType::Tcp,
-            .AddressFamily = NvmeOFMockDriver::DTO::AddressFamily::IPv4,
+            .TransportType = DTO::TransportType::Tcp,
+            .AddressFamily = DTO::AddressFamily::IPv4,
             .TransportServiceId = 4420,
             .TransportAddress = RTL_CONSTANT_STRING(L"10.1.0.50")
         },
@@ -28,8 +28,8 @@ constexpr NvmeOFMockDriver::DTO::DiskDescriptor DISCOVERY_RESPONSE[]{
     },
     {
         .NetworkConnection = {
-            .TransportType = NvmeOFMockDriver::DTO::TransportType::Tcp,
-            .AddressFamily = NvmeOFMockDriver::DTO::AddressFamily::IPv4,
+            .TransportType = DTO::TransportType::Tcp,
+            .AddressFamily = DTO::AddressFamily::IPv4,
             .TransportServiceId = 4420,
             .TransportAddress = RTL_CONSTANT_STRING(L"10.1.0.50")
         },
@@ -37,11 +37,11 @@ constexpr NvmeOFMockDriver::DTO::DiskDescriptor DISCOVERY_RESPONSE[]{
     }
 };
 
-static NTSTATUS GetOutputBuffer(WDFREQUEST request, size_t sizeExpected, NvmeOFMockDriver::Span<BYTE>& output) {
+static NTSTATUS GetOutputBuffer(WDFREQUEST request, size_t sizeExpected, Span<BYTE>& output) {
     WDFMEMORY memory;
     CHECK_STATUS(WdfRequestRetrieveOutputMemory(request, &memory))
 
-    size_t size;
+        size_t size;
     auto bfr = WdfMemoryGetBuffer(memory, &size);
     if (sizeExpected != size) {
         KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "memory:size (%llu) != wdf:size (%llu)\n", size, sizeExpected));
@@ -80,229 +80,330 @@ static const char* RequestToString(DriverRequestType request) {
     return "<unknown>";
 }
 
-namespace NvmeOFMockDriver {
-    namespace RequestHandlers {
+namespace RequestHandlers {
 
-        using namespace DTO;
+    using namespace DTO;
 
-        REQUEST_HANDLER_HEADER(GetHostNqn) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
-            Span<BYTE> buffer;
+    REQUEST_HANDLER_HEADER(GetHostNqn) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
+        Span<BYTE> buffer;
 
-            CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer));
+        CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer));
 
-            WdfObjectScopeGuard guard;
-            CHECK_STATUS(WdfObjectScopeGuard::Create(guard, device));
+        WdfObjectScopeGuard guard;
+        CHECK_STATUS(WdfObjectScopeGuard::Create(guard, device));
 
-            UNICODE_STRING nqn;
-            CHECK_STATUS(DataAcquisition::GetHostNqn(device, nqn, guard));
+        UNICODE_STRING nqn;
+        CHECK_STATUS(DataAcquisition::GetHostNqn(device, nqn, guard));
 
-            auto nqnBytes = nqn.Length + sizeof(UINT32);
-            if (buffer.Length < nqnBytes) {
-                KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small (need at least %llu bytes for NQN, got %llu)!\n", nqnBytes, buffer.Length));
-                return STATUS_UNSUCCESSFUL;
-            }
-
-            written = WriteString(buffer, nqn);
-            return STATUS_SUCCESS;
+        auto nqnBytes = nqn.Length + sizeof(UINT32);
+        if (buffer.Length < nqnBytes) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small (need at least %llu bytes for NQN, got %llu)!\n", nqnBytes, buffer.Length));
+            return STATUS_UNSUCCESSFUL;
         }
 
-        REQUEST_HANDLER_HEADER(GetStatistics) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS
+        written = WriteString(buffer, nqn);
+        return STATUS_SUCCESS;
+    }
+
+    REQUEST_HANDLER_HEADER(GetStatistics) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS
             Span<BYTE> buffer;
 
-            CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer))
+        CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer))
             CHECK_STATUS(DataAcquisition::GetStatistics(buffer, written))
 
             return STATUS_SUCCESS;
+    }
+
+    REQUEST_HANDLER_HEADER(SetHostNqn) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
+        WdfObjectScopeGuard guard;
+        CHECK_STATUS(WdfObjectScopeGuard::Create(guard, device));
+
+        auto fdo = FdoGetContext(device);
+
+        UNICODE_STRING nqn = fdo->MakeTempString();
+        ReadString(nqn, requestMemory);
+
+        CHECK_STATUS(DataAcquisition::SetHostNqn(device, nqn, guard));
+
+        return STATUS_SUCCESS;
+    }
+
+    REQUEST_HANDLER_HEADER(GetAllConnections) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
+        Span<BYTE> buffer;
+
+        CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer));
+
+        if (buffer.Length < sizeof(int)) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small!\n"));
+            return STATUS_UNSUCCESSFUL;
         }
 
-        REQUEST_HANDLER_HEADER(SetHostNqn) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
-            WdfObjectScopeGuard guard;
-            CHECK_STATUS(WdfObjectScopeGuard::Create(guard, device));
+        WdfObjectScopeGuard guard;
+        CHECK_STATUS(WdfObjectScopeGuard::Create(guard, device));
+        CHECK_STATUS(DataAcquisition::GetAllConnections(device, buffer, written, guard));
 
-            auto fdo = FdoGetContext(device);
+        return STATUS_SUCCESS;
+    }
 
-            UNICODE_STRING nqn = fdo->MakeTempString();
-            ReadString(nqn, requestMemory);
+    REQUEST_HANDLER_HEADER(AddConnection) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
 
-            CHECK_STATUS(DataAcquisition::SetHostNqn(device, nqn, guard));
+        UUID uuid;
+        CHECK_STATUS(ExUuidCreate(&uuid));
 
-            return STATUS_SUCCESS;
+        DiskDescriptor descriptor;
+        auto size = DiskDescriptor::Read(descriptor, requestMemory, 0);
+        if (size == 0) return STATUS_UNSUCCESSFUL;
+
+        WdfObjectScopeGuard guard;
+        CHECK_STATUS(WdfObjectScopeGuard::Create(guard, device));
+        CHECK_STATUS(DataAcquisition::WriteDescriptor(device, uuid, descriptor, true, guard));
+
+        Span<BYTE> buffer;
+        CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer));
+        if (buffer.Length < sizeof(UUID)) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Response buffer size too small!\n"));
+            return STATUS_UNSUCCESSFUL;
         }
 
-        REQUEST_HANDLER_HEADER(GetAllConnections) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
-            return STATUS_NOT_IMPLEMENTED;
+        memcpy(buffer.Data, &uuid, sizeof(UUID));
+        written = sizeof(uuid);
+
+        return STATUS_SUCCESS;
+    }
+
+    REQUEST_HANDLER_HEADER(RemoveConnection) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
+        UUID uuid;
+        if (requestMemory.Length < sizeof(UUID)) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small!\n"));
+            return STATUS_UNSUCCESSFUL;
         }
 
-        REQUEST_HANDLER_HEADER(AddConnection) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
+        memcpy(&uuid, requestMemory.Data, sizeof(UUID));
 
-            UUID uuid;
-            CHECK_STATUS(ExUuidCreate(&uuid));
+        return DataAcquisition::RemoveConnection(device, uuid);
+    }
 
-            DiskDescriptor descriptor;
-            auto size = DiskDescriptor::Read(descriptor, requestMemory, 0);
-            if (size == 0) return STATUS_UNSUCCESSFUL;
+    REQUEST_HANDLER_HEADER(ModifyConnection) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
 
-            WdfObjectScopeGuard guard;
-            CHECK_STATUS(WdfObjectScopeGuard::Create(guard, device));
-            CHECK_STATUS(DataAcquisition::WriteDescriptor(device, uuid, descriptor, guard));
-
-            return STATUS_SUCCESS;
+        UUID uuid;
+        if (requestMemory.Length < sizeof(UUID)) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small!\n"));
+            return STATUS_UNSUCCESSFUL;
         }
 
-        REQUEST_HANDLER_HEADER(RemoveConnection) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
-            UUID uuid;
-            if (requestMemory.Length < sizeof(UUID)) {
-                KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small!\n"));
-                return STATUS_UNSUCCESSFUL;
-            }
+        memcpy(&uuid, requestMemory.Data, sizeof(UUID));
 
-            memcpy(&uuid, requestMemory.Data, sizeof(UUID));
+        DiskDescriptor descriptor;
+        auto size = DiskDescriptor::Read(descriptor, requestMemory, sizeof(UUID));
+        if (size == 0) return STATUS_UNSUCCESSFUL;
 
-            return DataAcquisition::RemoveConnection(device, uuid);
+        WdfObjectScopeGuard guard;
+        CHECK_STATUS(WdfObjectScopeGuard::Create(guard, device));
+        CHECK_STATUS(DataAcquisition::WriteDescriptor(device, uuid, descriptor, false, guard));
+
+        return STATUS_SUCCESS;
+    }
+
+    REQUEST_HANDLER_HEADER(GetConnectionStatus) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
+        Span<BYTE> buffer;
+
+        if (requestMemory.Length < sizeof(UUID)) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small!\n"));
+            return STATUS_UNSUCCESSFUL;
         }
 
-        REQUEST_HANDLER_HEADER(ModifyConnection) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
+        UUID uuid;
+        memcpy(&uuid, requestMemory.Data, sizeof(UUID));
 
-            UUID uuid;
-            if (requestMemory.Length < sizeof(UUID)) {
-                KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small!\n"));
-                return STATUS_UNSUCCESSFUL;
-            }
+        ConnectionStatus status;
+        CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer));
+        CHECK_STATUS(DataAcquisition::GetConnectionStatus(device, status, uuid));
 
-            memcpy(&uuid, requestMemory.Data, sizeof(UUID));
+        const int iStatus = static_cast<int>(status);
+        memcpy(buffer.Data, &iStatus, sizeof(int));
+        written = sizeof(int);
 
-            DiskDescriptor descriptor;
-            auto size = DiskDescriptor::Read(descriptor, requestMemory, sizeof(UUID));
-            if (size == 0) return STATUS_UNSUCCESSFUL;
+        return STATUS_SUCCESS;
+    }
 
-            WdfObjectScopeGuard guard;
-            CHECK_STATUS(WdfObjectScopeGuard::Create(guard, device));
-            CHECK_STATUS(DataAcquisition::WriteDescriptor(device, uuid, descriptor, guard));
+    REQUEST_HANDLER_HEADER(GetConnection) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
+        Span<BYTE> buffer;
 
-            return STATUS_SUCCESS;
+        CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer));
+
+        if (buffer.Length < sizeof(int)) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Response buffer size too small!\n"));
+            return STATUS_UNSUCCESSFUL;
         }
 
-        REQUEST_HANDLER_HEADER(GetConnectionStatus) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS
-            return STATUS_NOT_IMPLEMENTED;
+        if (requestMemory.Length < sizeof(UUID)) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small!\n"));
+            return STATUS_UNSUCCESSFUL;
         }
 
-        REQUEST_HANDLER_HEADER(GetConnection) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS
-            return STATUS_NOT_IMPLEMENTED;
+        UUID uuid;
+        memcpy(&uuid, requestMemory.Data, sizeof(UUID));
+
+        WdfObjectScopeGuard guard;
+        CHECK_STATUS(WdfObjectScopeGuard::Create(guard, device));
+
+        CHECK_STATUS(DataAcquisition::GetConnection(device, buffer, written, uuid, guard));
+
+        return STATUS_SUCCESS;
+    }
+
+    REQUEST_HANDLER_HEADER(DiscoveryRequest) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
+
+        // We don't actually do anything here, since the request response is static...
+        // Sleep for 2 seconds to give an illusion of doing something
+        LARGE_INTEGER delay;
+        delay.QuadPart = 2ll * 10 * 1'000'000;  // 100ns multiples
+        return KeDelayExecutionThread(KernelMode, FALSE, &delay);
+    }
+
+    REQUEST_HANDLER_HEADER(GetDiscoveryResponse) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
+        Span<BYTE> buffer;
+
+        CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer));
+        written = WriteArray(buffer, DISCOVERY_RESPONSE, Utils::GetArrayLength(DISCOVERY_RESPONSE));
+
+        if (written == 0) return STATUS_UNSUCCESSFUL;
+        else return STATUS_SUCCESS;
+    }
+
+    REQUEST_HANDLER_HEADER(GetConnectionSize) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
+        Span<BYTE> buffer;
+
+        CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer));
+
+        if (buffer.Length < sizeof(int)) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Response buffer size too small!\n"));
+            return STATUS_UNSUCCESSFUL;
         }
 
-        REQUEST_HANDLER_HEADER(DiscoveryRequest) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
-
-            // We don't actually do anything here, since the request response is static...
-            // Sleep for 2 seconds to give an illusion of doing something
-            LARGE_INTEGER delay;
-            delay.QuadPart = 2ll * 10 * 1'000'000;  // 100ns multiples
-            return KeDelayExecutionThread(KernelMode, FALSE, &delay);
+        if (requestMemory.Length < sizeof(UUID)) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small!\n"));
+            return STATUS_UNSUCCESSFUL;
         }
 
-        REQUEST_HANDLER_HEADER(GetDiscoveryResponse) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
+        UUID uuid;
+        memcpy(&uuid, requestMemory.Data, sizeof(UUID));
+
+        size_t size;
+        CHECK_STATUS(DataAcquisition::GetConnectionSize(device, uuid, size));
+
+        const int iSize = static_cast<int>(size);
+        memcpy(buffer.Data, &iSize, sizeof(int));
+        written = sizeof(int);
+
+        return STATUS_SUCCESS;
+    }
+
+    REQUEST_HANDLER_HEADER(GetHostNqnSize) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS
             Span<BYTE> buffer;
 
-            CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer));
-            written = WriteArray(buffer, DISCOVERY_RESPONSE, Utils::GetArrayLength(DISCOVERY_RESPONSE));
-            
-            if (written == 0) return STATUS_UNSUCCESSFUL;
-            else return STATUS_SUCCESS;
-        }
-
-        REQUEST_HANDLER_HEADER(GetConnectionSize) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS
-            return STATUS_NOT_IMPLEMENTED;
-        }
-
-        REQUEST_HANDLER_HEADER(GetHostNqnSize) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS
-            Span<BYTE> buffer;
-
-            CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer))
+        CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer))
 
             if (buffer.Length < sizeof(int)) {
                 KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small!\n"));
                 return STATUS_UNSUCCESSFUL;
             }
 
-            WdfObjectScopeGuard guard;
-            CHECK_STATUS(WdfObjectScopeGuard::Create(guard, device));
+        WdfObjectScopeGuard guard;
+        CHECK_STATUS(WdfObjectScopeGuard::Create(guard, device));
 
-            UNICODE_STRING nqn;
-            CHECK_STATUS(DataAcquisition::GetHostNqn(device, nqn, guard));
+        UNICODE_STRING nqn;
+        CHECK_STATUS(DataAcquisition::GetHostNqn(device, nqn, guard));
 
-            int size = static_cast<int>(nqn.Length + sizeof(UINT32));
-            memcpy(buffer.Data, &size, sizeof(int));
-            written = sizeof(int);
+        int size = static_cast<int>(nqn.Length + sizeof(UINT32));
+        memcpy(buffer.Data, &size, sizeof(int));
+        written = sizeof(int);
 
-            return STATUS_SUCCESS;
-        }
-
-        REQUEST_HANDLER_HEADER(GetAllConnectionsSize) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS
-            return STATUS_NOT_IMPLEMENTED;
-        }
-
-        REQUEST_HANDLER_HEADER(GetDiscoveryResponseSize) {
-            REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
-            Span<BYTE> buffer;
-
-            CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer));
-            if (buffer.Length < sizeof(int)) {
-                KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small!\n"));
-                return STATUS_UNSUCCESSFUL;
-            }
-
-            int size = sizeof(int);
-            for (const auto& descriptor : DISCOVERY_RESPONSE) size += static_cast<int>(descriptor.GetRequiredBufferSize());
-
-            memcpy(buffer.Data, &size, sizeof(int));
-
-            written = sizeof(int);
-            return STATUS_SUCCESS;
-        }
+        return STATUS_SUCCESS;
     }
 
-    NTSTATUS HandleApplicationRequest(WDFDEVICE device, WDFREQUEST request, DriverRequestType applicationRequest, Span<BYTE> requestMemory, size_t outputBufferSize, size_t& written) {
-        using namespace RequestHandlers;
-        written = 0;
+    REQUEST_HANDLER_HEADER(GetAllConnectionsSize) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
+        Span<BYTE> buffer;
 
-        NTSTATUS status = STATUS_UNSUCCESSFUL;
+        CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer));
 
-        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "Application Request %s (%d)\n", RequestToString(applicationRequest), applicationRequest));
-    
-        switch (applicationRequest) {
-            case DriverRequestType::None: break;
-
-            case DriverRequestType::GetHostNqn: HANDLE_REQUEST(GetHostNqn);
-            case DriverRequestType::SetHostNqn: HANDLE_REQUEST(SetHostNqn);
-            case DriverRequestType::GetAllConnections: HANDLE_REQUEST(GetAllConnections);
-            case DriverRequestType::AddConnection: HANDLE_REQUEST(AddConnection);
-            case DriverRequestType::RemoveConnection: HANDLE_REQUEST(RemoveConnection);
-            case DriverRequestType::ModifyConnection: HANDLE_REQUEST(ModifyConnection);
-            case DriverRequestType::GetConnectionStatus: HANDLE_REQUEST(GetConnectionStatus);
-            case DriverRequestType::GetConnection: HANDLE_REQUEST(GetConnection);
-            case DriverRequestType::DiscoveryRequest: HANDLE_REQUEST(DiscoveryRequest);
-            case DriverRequestType::GetDiscoveryResponse: HANDLE_REQUEST(GetDiscoveryResponse);
-            case DriverRequestType::GetStatistics: HANDLE_REQUEST(GetStatistics);
-            case DriverRequestType::GetHostNqnSize: HANDLE_REQUEST(GetHostNqnSize);
-            case DriverRequestType::GetConnectionSize: HANDLE_REQUEST(GetConnectionSize);
-            case DriverRequestType::GetAllConnectionsSize: HANDLE_REQUEST(GetAllConnectionsSize);
-            case DriverRequestType::GetDiscoveryResponseSize: HANDLE_REQUEST(GetDiscoveryResponseSize);
+        if (buffer.Length < sizeof(int)) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small!\n"));
+            return STATUS_UNSUCCESSFUL;
         }
 
-        CHECK_STATUS(status)
-        return status;
+        size_t size;
+        CHECK_STATUS(DataAcquisition::GetAllConnectionsSize(device, size));
+
+        const int iSize = static_cast<int>(size);
+        memcpy(buffer.Data, &iSize, sizeof(int));
+        written = sizeof(int);
+
+        return STATUS_SUCCESS;
     }
+
+    REQUEST_HANDLER_HEADER(GetDiscoveryResponseSize) {
+        REQUEST_HANDLER_HEADER_UNREFERENCED_PARAMS;
+        Span<BYTE> buffer;
+
+        CHECK_STATUS(GetOutputBuffer(request, outputBufferSize, buffer));
+        if (buffer.Length < sizeof(int)) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR "Request buffer size too small!\n"));
+            return STATUS_UNSUCCESSFUL;
+        }
+
+        int size = sizeof(int);
+        for (const auto& descriptor : DISCOVERY_RESPONSE) size += static_cast<int>(descriptor.GetRequiredBufferSize());
+
+        memcpy(buffer.Data, &size, sizeof(int));
+
+        written = sizeof(int);
+        return STATUS_SUCCESS;
+    }
+}
+
+NTSTATUS HandleApplicationRequest(WDFDEVICE device, WDFREQUEST request, DriverRequestType applicationRequest, Span<BYTE> requestMemory, size_t outputBufferSize, size_t& written) {
+    using namespace RequestHandlers;
+    written = 0;
+
+    NTSTATUS status = STATUS_UNSUCCESSFUL;
+
+    KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "Application Request %s (%d)\n", RequestToString(applicationRequest), applicationRequest));
+
+    switch (applicationRequest) {
+        case DriverRequestType::None: break;
+
+        case DriverRequestType::GetHostNqn: HANDLE_REQUEST(GetHostNqn);
+        case DriverRequestType::SetHostNqn: HANDLE_REQUEST(SetHostNqn);
+        case DriverRequestType::GetAllConnections: HANDLE_REQUEST(GetAllConnections);
+        case DriverRequestType::AddConnection: HANDLE_REQUEST(AddConnection);
+        case DriverRequestType::RemoveConnection: HANDLE_REQUEST(RemoveConnection);
+        case DriverRequestType::ModifyConnection: HANDLE_REQUEST(ModifyConnection);
+        case DriverRequestType::GetConnectionStatus: HANDLE_REQUEST(GetConnectionStatus);
+        case DriverRequestType::GetConnection: HANDLE_REQUEST(GetConnection);
+        case DriverRequestType::DiscoveryRequest: HANDLE_REQUEST(DiscoveryRequest);
+        case DriverRequestType::GetDiscoveryResponse: HANDLE_REQUEST(GetDiscoveryResponse);
+        case DriverRequestType::GetStatistics: HANDLE_REQUEST(GetStatistics);
+        case DriverRequestType::GetHostNqnSize: HANDLE_REQUEST(GetHostNqnSize);
+        case DriverRequestType::GetConnectionSize: HANDLE_REQUEST(GetConnectionSize);
+        case DriverRequestType::GetAllConnectionsSize: HANDLE_REQUEST(GetAllConnectionsSize);
+        case DriverRequestType::GetDiscoveryResponseSize: HANDLE_REQUEST(GetDiscoveryResponseSize);
+    }
+
+    CHECK_STATUS(status);
+    return status;
 }

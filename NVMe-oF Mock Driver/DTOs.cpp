@@ -13,7 +13,7 @@
     bfrLength -= offset; \
     bfrData += offset;
 
-namespace NvmeOFMockDriver::DTO {
+namespace DTO {
     size_t WriteString(Span<BYTE> buffer, const UNICODE_STRING& string, const size_t offset) {
         DTO_COMMON_HEADER;
 
@@ -67,7 +67,7 @@ namespace NvmeOFMockDriver::DTO {
     size_t InitStringFromBuffer(UNICODE_STRING& string, const Span<BYTE> buffer, const size_t offset) {
         DTO_COMMON_HEADER
 
-        UINT32 len;
+            UINT32 len;
         if (bfrLength < sizeof(len)) {
             KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_WARNING_LEVEL, DRIVER_LOG_STR __FUNCTION__ " Invalid buffer (too small)\n"));
             return 0;
@@ -80,7 +80,7 @@ namespace NvmeOFMockDriver::DTO {
         }
 
         string.Buffer = reinterpret_cast<PWSTR>(bfrData + sizeof(len));
-        string.Length = string.MaximumLength = static_cast<USHORT>(len) * sizeof(WCHAR);
+        string.Length = string.MaximumLength = static_cast<USHORT>(len);
 
         return sizeof(len) + string.Length;
     }
@@ -163,7 +163,33 @@ namespace NvmeOFMockDriver::DTO {
         return netLen + nqnLen;
     }
 
+    size_t DiskDescriptor::WriteFull(Span<BYTE> buffer, size_t offset) const {
+        DTO_OFFSET_CHECK;
+
+        if (buffer.Length - offset < sizeof(GUID)) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_WARNING_LEVEL, DRIVER_LOG_STR __FUNCTION__ " Invalid offset (points past buffer)\n"));
+            return 0;
+        }
+
+        memcpy(buffer.Data + offset, &Uuid, sizeof(GUID));
+
+        const auto netLen = NetworkConnection.Write(buffer, offset + sizeof(GUID));
+        if (netLen == 0) return 0;
+
+        const auto nqnLen = WriteString(buffer, Nqn, offset + netLen + sizeof(GUID));
+        if (nqnLen == 0) return 0;
+
+        const auto ntPathLen = WriteString(buffer, NtObjectPath, offset + netLen + nqnLen + sizeof(GUID));
+        if (ntPathLen == 0) return 0;
+
+        return netLen + nqnLen + ntPathLen + sizeof(GUID);
+    }
+
     size_t DiskDescriptor::GetRequiredBufferSize() const {
         return NetworkConnection.GetRequiredBufferSize() + Nqn.Length + sizeof(UINT32);
+    }
+
+    size_t DiskDescriptor::GetRequiredBufferSizeFull() const {
+        return GetRequiredBufferSize() + NtObjectPath.Length + sizeof(UINT32) + sizeof(GUID);
     }
 }

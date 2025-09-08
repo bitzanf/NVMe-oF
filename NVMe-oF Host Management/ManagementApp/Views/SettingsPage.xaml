@@ -7,7 +7,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:localControls="using:ManagementApp.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:BoolNegationConverter x:Name="BoolNegationConverter" />
+    </Page.Resources>
 
     <Grid RowSpacing="24"
           ColumnSpacing="12">
@@ -67,7 +72,8 @@
             <!-- ReSharper disable once Xaml.StaticResourceNotResolved -->
             <Button x:Name="BtnStartService"
                     Click="BtnStartService_OnClick"
-                    Style="{StaticResource AccentButtonStyle}">
+                    Style="{StaticResource AccentButtonStyle}"
+                    IsEnabled="{x:Bind ViewModel.IsRunning, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
 
                 Start
             </Button>
@@ -75,7 +81,8 @@
             <!-- ReSharper disable once Xaml.StaticResourceNotResolved -->
             <Button x:Name="BtnStopService"
                     Click="BtnStopService_OnClick"
-                    Style="{StaticResource AccentButtonStyle}">
+                    Style="{StaticResource AccentButtonStyle}"
+                    IsEnabled="{x:Bind ViewModel.IsRunning, Mode=OneWay}">
 
                 Stop
             </Button>

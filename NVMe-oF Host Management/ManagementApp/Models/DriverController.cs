@@ -217,7 +217,10 @@ internal partial class DriverController : ViewModels.ObservableBase, IDisposable
     {
         if (connection.Descriptor.Guid == Guid.Empty)
             throw new Exception("New connections must not be integrated this way");
-        _connections[connection.Descriptor.Guid] = connection;
+
+        // The collection actually keeps track of any modifying accesses, so it would set the connection as overwritten
+        // ReSharper disable once RedundantCheckBeforeAssignment
+        if (_connections[connection.Descriptor.Guid] != connection) _connections[connection.Descriptor.Guid] = connection;
     }
 
     private void ThrowIfNotConnected()

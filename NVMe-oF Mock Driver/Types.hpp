@@ -19,49 +19,49 @@ constexpr UNICODE_STRING CONNECTIONS_KEY_PATH = RTL_CONSTANT_STRING(L"Connection
     }}
 
 
-namespace NvmeOFMockDriver {
-    template <typename T>
-    struct Span {
-        T* Data;
-        size_t Length;
+template <typename T>
+struct Span {
+    T* Data;
+    size_t Length;
 
-        size_t ByteLength() const { return Length * sizeof(T); }
+    size_t ByteLength() const { return Length * sizeof(T); }
+};
+
+struct FdoContext {
+    WDFQUEUE Queue;
+
+    // !! Owning Span
+    Span<WCHAR> StringTempMemory;
+
+    size_t DiskCount;
+
+    [[nodiscard]] UNICODE_STRING MakeTempString() const;
+
+    static NTSTATUS Init(FdoContext* context);
+    static void Cleanup(WDFOBJECT object);
+};
+
+WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(FdoContext, FdoGetContext);
+
+namespace DTO {
+    enum class TransportType : int
+    {
+        Tcp,
+        Rdma
     };
 
-    struct FdoContext {
-        WDFQUEUE Queue;
-
-        // !! Owning Span
-        Span<WCHAR> StringTempMemory;
-
-        [[nodiscard]] UNICODE_STRING MakeTempString() const;
-
-        static NTSTATUS Init(FdoContext* context);
-        static void Cleanup(WDFOBJECT object);
+    enum class AddressFamily : int
+    {
+        IPv4,
+        IPv6
     };
 
-    WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(FdoContext, FdoGetContext);
-
-    namespace DTO {
-        enum class TransportType : int
-        {
-            Tcp,
-            Rdma
-        };
-
-        enum class AddressFamily : int
-        {
-            IPv4,
-            IPv6
-        };
-
-        enum class ConnectionStatus : int
-        {
-            Disconnected,
-            Connecting,
-            Connected
-        };
-    }
+    enum class ConnectionStatus : int
+    {
+        Disconnected,
+        Connecting,
+        Connected
+    };
 }
 
 bool CheckStatus(NTSTATUS status);

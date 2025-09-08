@@ -34,6 +34,8 @@ internal class SettingsViewModel : ObservableBase
         set => SetField(ref _serviceStatus, value);
     }
 
+    public bool IsRunning => _driverServiceHelper.IsRunning;
+
     public void Start()
     {
         if (_driverServiceHelper is { IsRunning: false, IsUpdating: false })
@@ -58,5 +60,7 @@ internal class SettingsViewModel : ObservableBase
         if (_driverServiceHelper.IsUpdating) ServiceStatus = loader.GetString("ServiceStatus_Updating");
         else if (_driverServiceHelper.IsRunning) ServiceStatus = loader.GetString("ServiceStatus_Running");
         else ServiceStatus = loader.GetString("ServiceStatus_Stopped");
+
+        OnPropertyChanged(nameof(IsRunning));
     }
 }

@@ -36,7 +36,7 @@ internal partial class DiskListViewModel : ObservableBase
         get => _hasChanges;
         set
         {
-            _removedConnections.Clear();
+            if (!value) _removedConnections.Clear();
             SetField(ref _hasChanges, value);
         }
     }

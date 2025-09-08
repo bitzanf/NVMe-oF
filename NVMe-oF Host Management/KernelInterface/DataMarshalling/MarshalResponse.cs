@@ -142,13 +142,14 @@ namespace KernelInterface.DataMarshalling
         /// <returns></returns>
         private static NetworkConnection ReadNetworkConnection(BinaryReader reader)
         {
-            var network = new NetworkConnection
-            {
-                TransportType = (TransportType)reader.ReadInt32(),
-                AddressFamily = (AddressFamily)reader.ReadInt32(),
-                TransportServiceId = reader.ReadUInt16(),
-                TransportAddress = ReadString(reader)
-            };
+            // ReSharper disable once UseObjectOrCollectionInitializer
+            var network = new NetworkConnection();
+
+            // Ensure correct loading order
+            network.TransportType = (TransportType)reader.ReadInt32();
+            network.AddressFamily = (AddressFamily)reader.ReadInt32();
+            network.TransportServiceId = reader.ReadUInt16();
+            network.TransportAddress = ReadString(reader);
 
             return network;
         }
@@ -160,8 +161,8 @@ namespace KernelInterface.DataMarshalling
         /// <returns></returns>
         private static string ReadString(BinaryReader reader)
         {
-            var size = reader.ReadInt32();
-            var chars = reader.ReadChars(size);
+            var nBytes = reader.ReadInt32();
+            var chars = reader.ReadChars(nBytes / sizeof(char));
             return new string(chars);
         }
     }

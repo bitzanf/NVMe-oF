@@ -56,7 +56,8 @@ NTSTATUS RegistryKey::OpenSubKey(const UNICODE_STRING* keyName, ACCESS_MASK acce
     return status;
 }
 
-NTSTATUS RegistryKey::CreateSubKey(const UNICODE_STRING* keyName, ACCESS_MASK access, RegistryKey& key) const {
+// ReSharper disable once CppMemberFunctionMayBeConst
+NTSTATUS RegistryKey::CreateSubKey(const UNICODE_STRING* keyName, ACCESS_MASK access, RegistryKey& key) {
     RegistryKey temp;
     auto status = WdfRegistryCreateKey(Key, keyName, access, REG_OPTION_NON_VOLATILE, nullptr, WDF_NO_OBJECT_ATTRIBUTES, &temp.Key);
 

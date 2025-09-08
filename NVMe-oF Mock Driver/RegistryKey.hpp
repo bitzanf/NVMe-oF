@@ -25,7 +25,7 @@ public:
     NTSTATUS OpenSubKey(const UNICODE_STRING *keyName, ACCESS_MASK access, RegistryKey& key) const;
 
     /// Open an existing key, or create if it does not exist yet
-    NTSTATUS CreateSubKey(const UNICODE_STRING* keyName, ACCESS_MASK access, RegistryKey& key) const;
+    NTSTATUS CreateSubKey(const UNICODE_STRING* keyName, ACCESS_MASK access, RegistryKey& key);
 
 private:
     WDFKEY Key = nullptr;

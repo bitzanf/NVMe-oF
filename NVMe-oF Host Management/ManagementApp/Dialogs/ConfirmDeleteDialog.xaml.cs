@@ -25,7 +25,7 @@ internal sealed partial class ConfirmDeleteDialog : Page
     /// <summary>
     /// Textual representation of the network connection address' type for display
     /// </summary>
-    public string AddressTypeString => $"{NetworkConnection.AddressFamily} / {NetworkConnection.TransportType}";
+    public string AddressTypeString => $"{NetworkConnection.AddressFamily} / {NetworkConnection.TransportType.ToString().ToUpper()}";
 
     /// <summary>
     /// Textual representation of the network connection address and port for display

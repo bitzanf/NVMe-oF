@@ -27,7 +27,7 @@ private:
 
 template <typename T, typename CallableRelease>
 requires requires (T* inst, CallableRelease release) {
-    { release(inst) } -> NvmeOFMockDriver::Concepts::SameAs<void>;
+    { release(inst) } -> Concepts::SameAs<void>;
 }
 class RaiiReleaseHook {
 public:

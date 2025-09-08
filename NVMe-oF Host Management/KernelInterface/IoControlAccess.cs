@@ -87,8 +87,6 @@ namespace KernelInterface
                 bytes => sizeExpected = BitConverter.ToInt32(bytes, 0)
             );
 
-            CheckResponseLength(sizeof(int), sizeExpected, nameof(MarshalRequest.GetAllConnectionsSize));
-
             List<DiskDescriptor> connections = null;
             RequestWrapper(
                 sizeExpected,
@@ -113,8 +111,8 @@ namespace KernelInterface
             return guid;
         }
 
-        public void RemoveConnection(Guid connectionId) =>
-            RequestWrapper(0, () => MarshalRequest.RemoveConnection(connectionId), null);
+        public void RemoveConnection(Guid connectionId)
+            => RequestWrapper(0, () => MarshalRequest.RemoveConnection(connectionId), null);
 
         public void ModifyConnection(DiskDescriptor newDescriptor)
             => RequestWrapper(0, () => MarshalRequest.ModifyConnection(newDescriptor), null);
