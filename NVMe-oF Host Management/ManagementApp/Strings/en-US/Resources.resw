@@ -124,7 +124,7 @@
     <value>NVMe-oF kernel driver management application</value>
   </data>
   <data name="AppDisplayName" xml:space="preserve">
-    <value>NVME-oF Connection Management</value>
+    <value>NVMe-oF Connection Management</value>
   </data>
   <data name="CancelDisks.ToolTipService.ToolTip" xml:space="preserve">
     <value>Cancel changes</value>
@@ -272,5 +272,8 @@
   </data>
   <data name="NetworkPacketThroughput.Text" xml:space="preserve">
     <value>Network throughput:</value>
+  </data>
+  <data name="ValidationError_Port" xml:space="preserve">
+    <value>Invalid port</value>
   </data>
 </root>

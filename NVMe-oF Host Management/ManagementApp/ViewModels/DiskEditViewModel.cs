@@ -11,7 +11,7 @@ internal partial class DiskEditViewModel(DiskConnectionModel? diskConnection) : 
 {
     private bool _hasChanges;
 
-    public Guid Guid => Model.Descriptor.Guid;
+    public string Guid => Model.Descriptor.Guid.ToString("B").ToUpper();
 
     public string NtObjectPath => Model.Descriptor.NtObjectPath;
 

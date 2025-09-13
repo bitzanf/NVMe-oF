@@ -15,7 +15,7 @@ internal class SettingsViewModel : ObservableBase
 
     public SettingsViewModel()
     {
-        _nqn = App.DriverController.HostNqn;
+        _nqn = string.Empty;
         _serviceStatus = string.Empty;
         _driverServiceHelper = new();
 
@@ -62,5 +62,10 @@ internal class SettingsViewModel : ObservableBase
         else ServiceStatus = loader.GetString("ServiceStatus_Stopped");
 
         OnPropertyChanged(nameof(IsRunning));
+
+        // If we just started the service, attempt to connect to the driver again
+        if (IsRunning && !App.DriverController.IsConnected) App.DriverController.ConnectToDriver();
+
+        Nqn = App.DriverController.HostNqn;
     }
 }

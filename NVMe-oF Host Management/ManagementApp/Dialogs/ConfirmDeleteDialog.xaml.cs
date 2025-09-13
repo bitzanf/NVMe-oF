@@ -32,6 +32,11 @@ internal sealed partial class ConfirmDeleteDialog : Page
     /// </summary>
     public string AddressString => $"{NetworkConnection.TransportAddress} : {NetworkConnection.TransportServiceId}";
 
+    /// <summary>
+    /// Textual representation of the connection's Guid
+    /// </summary>
+    public string GuidString => $"{_connection.Descriptor.Guid:B}".ToUpper();
+
 
     private ConfirmDeleteDialog(Models.DiskConnectionModel connection)
     {

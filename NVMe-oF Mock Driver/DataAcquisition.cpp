@@ -294,7 +294,7 @@ namespace DataAcquisition {
             string = nullptr;
             auto fdo = FdoGetContext(device);
             UNICODE_STRING unicodeString = fdo->MakeTempString();
-            CHECK_STATUS(RtlUnicodeStringPrintf(&unicodeString, L"\\Disk\\%d", fdo->DiskCount++));
+            CHECK_STATUS(RtlUnicodeStringPrintf(&unicodeString, L"\\Device\\Virtualdisk%d", fdo->DiskCount++));
             CREATE_SCOPED_WDF_STRING(guard.GetObject(), &string, &unicodeString);
             CHECK_STATUS(WdfRegistryAssignString(key.GetKey(), &NT_OBJECT_PATH_KEY_NAME, string));
         }

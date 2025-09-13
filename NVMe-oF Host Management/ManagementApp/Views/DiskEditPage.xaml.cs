@@ -104,6 +104,9 @@ namespace ManagementApp.Views
             if (string.IsNullOrWhiteSpace(descriptor.NetworkConnection.TransportAddress))
                 validationErrors.Add(loader.GetString("ValidationError_Address"));
 
+            if (descriptor.NetworkConnection.TransportServiceId == 0)
+                validationErrors.Add(loader.GetString("ValidationError_Port"));
+
             if (validationErrors.Count <= 0) return true;
             
             Notification notification = new()

@@ -1,9 +1,16 @@
+// ReSharper disable CppClangTidyClangDiagnosticExtraSemiStmt
 #include <ntddk.h>
 #include <wdf.h>
 #include <ntddscsi.h>
 
 #include "RegistryKey.hpp"
 #include "RequestHandling.hpp"
+
+#define MAYBE_LOG_ERROR(status) \
+    if (!NT_SUCCESS(status)) { \
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, DRIVER_LOG_STR __FUNCTION__ " ERROR Status: 0x%x\n", status)); \
+        return; \
+    }
 
 constexpr UNICODE_STRING DeviceSymlink = RTL_CONSTANT_STRING(L"\\??\\NvmeOfController");
 
@@ -13,23 +20,47 @@ EVT_WDF_DRIVER_DEVICE_ADD EvtDeviceAdd;
 EVT_WDF_OBJECT_CONTEXT_CLEANUP EvtDriverCleanup;
 EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL EvtIoQueueIoCtl;
 
+constexpr UNICODE_STRING NEXT_DISK_ID_KEY_NAME = RTL_CONSTANT_STRING(L"NextDiskId");
+
 UNICODE_STRING FdoContext::MakeTempString() const {
     UNICODE_STRING string;
     RtlInitEmptyUnicodeString(&string, StringTempMemory.Data, static_cast<USHORT>(StringTempMemory.ByteLength()));
     return string;
 }
 
-NTSTATUS FdoContext::Init(FdoContext* context) {
+NTSTATUS FdoContext::Init(WDFDEVICE device) {
+    auto context = FdoGetContext(device);
     if (context == nullptr) return STATUS_UNSUCCESSFUL;
 
     context->StringTempMemory.Length = 0x7fff;
 
     // ReSharper disable once CppMultiCharacterLiteral
     context->StringTempMemory.Data = static_cast<WCHAR*>(
-        ExAllocatePool2(POOL_FLAG_PAGED, context->StringTempMemory.ByteLength(), '1rfB') // NOLINT(clang-diagnostic-four-char-constants)
-        );
+        ExAllocatePool2(POOL_FLAG_PAGED, context->StringTempMemory.ByteLength(), 'fMVN') // NOLINT(clang-diagnostic-four-char-constants)
+    );
 
     context->DiskCount = 0;
+
+    RegistryKey driverKey, settingsKey;
+    CHECK_STATUS(RegistryKey::Open(device, KEY_READ, driverKey));
+    auto status = driverKey.OpenSubKey(&SETTINGS_KEY_PATH, KEY_READ, settingsKey);
+    if (status == STATUS_OBJECT_NAME_NOT_FOUND) {
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_WARNING_LEVEL, DRIVER_LOG_STR __FUNCTION__ " - Settings key not found, using default initial value\n"));
+    }
+    else {
+        CHECK_STATUS(status);
+
+        ULONG nextId;
+        status = WdfRegistryQueryULong(settingsKey.GetKey(), &NEXT_DISK_ID_KEY_NAME, &nextId);
+        if (status == STATUS_OBJECT_NAME_NOT_FOUND) {
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_WARNING_LEVEL, DRIVER_LOG_STR __FUNCTION__ " - NextDiskId not found, using default initial value\n"));
+        } else {
+            CHECK_STATUS(status);
+            KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR __FUNCTION__ " - NextDiskId = %ld\n", nextId));
+
+            context->DiskCount = nextId;
+        }
+    }
 
     return STATUS_SUCCESS;
 }
@@ -42,6 +73,21 @@ void FdoContext::Cleanup(WDFOBJECT object) {
         ExFreePool(fdo->StringTempMemory.Data);
         fdo->StringTempMemory.Data = nullptr;
         fdo->StringTempMemory.Length = 0;
+    }
+
+    RegistryKey driverKey, settingsKey;
+    auto status = RegistryKey::Open(static_cast<WDFDEVICE>(object), KEY_READ, driverKey);
+    MAYBE_LOG_ERROR(status);
+
+    status = driverKey.OpenSubKey(&SETTINGS_KEY_PATH, KEY_READ, settingsKey);
+    if (status == STATUS_OBJECT_NAME_NOT_FOUND) {
+        KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_WARNING_LEVEL, DRIVER_LOG_STR __FUNCTION__ " - Settings key not found, not saving\n"));
+    }
+    else {
+        MAYBE_LOG_ERROR(status);
+
+        status = WdfRegistryAssignULong(settingsKey.GetKey(), &NEXT_DISK_ID_KEY_NAME, static_cast<ULONG>(fdo->DiskCount));
+        MAYBE_LOG_ERROR(status);
     }
 }
 
@@ -77,23 +123,24 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT driverObject, PUNICODE_STRING registryPath) 
 }
 
 NTSTATUS EvtDeviceAdd(WDFDRIVER driver, PWDFDEVICE_INIT deviceInit) {
-    PAGED_CODE()
+    PAGED_CODE();
+    UNREFERENCED_PARAMETER(driver);
 
-        UNREFERENCED_PARAMETER(driver);
     KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "EvtDeviceAdd\n"));
 
     // Create device object
     WDF_OBJECT_ATTRIBUTES attributes;
-    attributes.EvtCleanupCallback = &FdoContext::Cleanup;
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, FdoContext);
+    attributes.EvtCleanupCallback = &FdoContext::Cleanup;
 
     WDFDEVICE device;
     NTSTATUS status = WdfDeviceCreate(&deviceInit, &attributes, &device);
 
     RegistryKey driverKey, settingsKey, connectionsKey;
 
-    auto fdoContext = FdoGetContext(device);
-    if (!CheckStatus(FdoContext::Init(fdoContext))) goto exit;
+    // ReSharper disable once CppInitializedValueIsAlwaysRewritten
+    FdoContext* fdoContext = nullptr;
+    if (!CheckStatus(FdoContext::Init(device))) goto exit;
     KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "Initialized FDO Context\n"));
 
     if (!CheckStatus(status)) goto exit;
@@ -104,6 +151,7 @@ NTSTATUS EvtDeviceAdd(WDFDRIVER driver, PWDFDEVICE_INIT deviceInit) {
     WDF_IO_QUEUE_CONFIG_INIT(&queueConfig, WdfIoQueueDispatchSequential);
     queueConfig.EvtIoDeviceControl = &EvtIoQueueIoCtl;
 
+    fdoContext = FdoGetContext(device);
     status = WdfIoQueueCreate(device, &queueConfig, WDF_NO_OBJECT_ATTRIBUTES, &(fdoContext->Queue));
     if (!CheckStatus(status)) goto exit;
     KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "Created WDF IO queue\n"));
@@ -133,8 +181,10 @@ exit:
 }
 
 void EvtDriverCleanup(WDFOBJECT driver) {
-    PAGED_CODE()
-        UNREFERENCED_PARAMETER(driver);
+    PAGED_CODE();
+    UNREFERENCED_PARAMETER(driver);
+
+    KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, DRIVER_LOG_STR "Driver Cleanup\n"));
 }
 
 NTSTATUS IoCtlInner(WDFDEVICE device, WDFREQUEST request, size_t outputBufferSize, size_t inputBufferSize, size_t& written) {
@@ -184,7 +234,7 @@ NTSTATUS IoCtlInner(WDFDEVICE device, WDFREQUEST request, size_t outputBufferSiz
         return status;
 }
 
-// bp NVMe_oF_MockDriver!NvmeOFMockDriver::EvtIoQueueIoCtl
+// bp NVMe_oF_MockDriver!EvtIoQueueIoCtl
 
 void EvtIoQueueIoCtl(WDFQUEUE queue, WDFREQUEST request, size_t outputBufferSize, size_t inputBufferSize, ULONG ioControlCode) {
     if (ioControlCode != IOCTL_MINIPORT_PROCESS_SERVICE_IRP) {

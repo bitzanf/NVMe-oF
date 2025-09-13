@@ -273,4 +273,7 @@
   <data name="NetworkPacketThroughput.Text" xml:space="preserve">
     <value>Propustnost sítě:</value>
   </data>
+  <data name="ValidationError_Port" xml:space="preserve">
+    <value>Neplatný port</value>
+  </data>
 </root>

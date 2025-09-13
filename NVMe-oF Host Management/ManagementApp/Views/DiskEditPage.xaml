@@ -22,7 +22,7 @@
 
         <TextBlock Visibility="{x:Bind ShowInfo, Converter={StaticResource BoolToVisibilityConverter}}"
                    FontSize="20">
-            <Run>{</Run><Run Text="{x:Bind ViewModel.Guid}" /><Run>}</Run>
+            <Run Text="{x:Bind ViewModel.Guid}" />
             <Run Foreground="LightGray"> @ </Run>
             <Run Text="{x:Bind ViewModel.NtObjectPath}" />
         </TextBlock>

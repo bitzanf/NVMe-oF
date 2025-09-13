@@ -10,7 +10,7 @@
 
     <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <TextBlock TextWrapping="Wrap">
-            <Run Text="{x:Bind _connection.Descriptor.Guid}" />
+            <Run Text="{x:Bind GuidString}" />
             <LineBreak />
             <Run Text="{x:Bind AddressTypeString}" />
             <LineBreak />

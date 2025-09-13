@@ -37,7 +37,7 @@ struct FdoContext {
 
     [[nodiscard]] UNICODE_STRING MakeTempString() const;
 
-    static NTSTATUS Init(FdoContext* context);
+    static NTSTATUS Init(WDFDEVICE device);
     static void Cleanup(WDFOBJECT object);
 };
 
